@@ -11,10 +11,19 @@ const Blaze = require('./crash');
           createUsers,
           insertUsersToken,
           getUser,
-          getAllRows,
-          InsertRoullete,
-          getLastNumber18,
-          getLastNumber,
-          usersFilters
+     
         } = require('./database');
+
+app.post('/api/v1/setCrash', async (req, res) => {
+          console.log(req)
+          const horario = req.body.horario
+          const valor = req.body.valor
+          const username = req.body.username
+          const password = req.body.password
+          const autoretirar = req.body.autoretirar
+          console.log(horario, valor, username, password, autoretirar)
+          const blaze = new Blaze(valor, username, password, horario, autoretirar)
+          await blaze.getEntry()
+          res.json('You have set the blaze at ')
+        })
 
