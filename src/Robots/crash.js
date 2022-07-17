@@ -31,7 +31,7 @@ async init() {
         ignoreHTTPSErrors: true,
         // Set Proxy for IP address BRAZIL
         args: [
-            '--proxy-server=187.60.166.58:8080',
+            //'--proxy-server=187.60.166.58:8080',
             '--no-sandbox',
             '--single-process',
             '--window-size=920,850'
