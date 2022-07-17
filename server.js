@@ -4,6 +4,7 @@ const port = process.env.PORT || 3051;
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const Blaze = require('./crash');
+const webhooks = require('node-webhooks');
 
      const {
           checkToken,
@@ -25,5 +26,16 @@ app.post('/api/v1/setCrash', async (req, res) => {
           const blaze = new Blaze(valor, username, password, horario, autoretirar)
           await blaze.getEntry()
           res.json('You have set the blaze at ')
+          const hook = 
         })
+
+
+const registerHooks = () => {
+          return new webhooks({
+              db: {
+                  'callback_hook': ['http://localhost:8005/webhook-client']
+              }
+          });
+      }
+
 
