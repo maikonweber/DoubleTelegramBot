@@ -26,12 +26,14 @@ class Blaze {
 async init() {
 
     this.browser = await puppeteer.launch({
-        executablePath: '/usr/bin/google-chrome',
-        headless: true,
+        product: 'firefox',
+        headless: false,
         ignoreHTTPSErrors: true,
         // Set Proxy for IP address BRAZIL
         args: [
             //'--proxy-server=187.60.166.58:8080',
+            
+            '--use-gl=egl',
             '--no-sandbox',
             '--single-process',
             '--window-size=920,850'
@@ -99,7 +101,6 @@ async Entry() {
     this.init()
 
     setInterval(async () => {   
-        
     let time = moment().tz('America/Sao_Paulo');
     if (this.page != null) {
     this.horario.forEach(element => {
