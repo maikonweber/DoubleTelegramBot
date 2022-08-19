@@ -126,7 +126,6 @@ async function checkToken(token) {
 
 
 module.exports = {
-  
     insertTelegram,
     insertTelegramSygnal,
     getIdANDInserResult,

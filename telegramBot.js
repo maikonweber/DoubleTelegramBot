@@ -17,5 +17,6 @@ bot.on('message', (msg) => {
   const chatId = msg.chat.id;
 
   bot.setChatDescription(chatId, 'Double and Crash Bot')
-
+  
 })
+
