@@ -9,6 +9,4 @@ const CrashBot = new Blaze(
 )
 
 console.log(Blaze)
-
-
-CrashBot.getEntry()
+CrashBot.init()

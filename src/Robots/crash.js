@@ -6,9 +6,11 @@ puppeteer.use(StealthPlugin());
 const moment = require('moment-timezone');
 const redis = require('ioredis')
 const client = new redis();
+const Mq = require('./mq')
+const MQ = new Mq();
 
 
-class Blaze {
+class Blaze extends MQ {
     // Initial puppeter
     constructor (username, password, worktime, martingalePercent, sorogalePercent, maxlossPercent, valor) {
         this.browser = null;
@@ -31,7 +33,7 @@ class Blaze {
         this.martingalePercent = martingalePercent;
         this.sorogalePercent = sorogalePercent;
         this.maxlossPercent = maxlossPercent;
-
+        this.trueRelation = true;
         // this.horario = horario;
         // this.valor = valor;
         // this.autoretirar = autoretirar;    
@@ -39,7 +41,7 @@ class Blaze {
 
 async init() {
     this.browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         ignoreHTTPSErrors: true,
         // Set Proxy for IP address BRAZIL
         args: [
@@ -75,13 +77,13 @@ async init() {
     await this.page.keyboard.press('Enter')
     await this.page.waitForTimeout(3000)
     await this.page.goto('https://blaze.com/pt/games/crash');
-    await this.page.waitForTimeout(400)
+    await this.page.waitForTimeout(800)
     const thos = await this.page.waitForSelector('.amount')
     const jsonText = await thos.getProperty('innerText')
     const bankValuesText = await jsonText.jsonValue()
     this.bankValue = bankValuesText
     console.log(this.bankValue)
-
+    await this.updateCurrent()
     // await this.page.waitForTimeout(7000)
         // let body = await this.page.$$('body')
         // // get body text
@@ -137,29 +139,56 @@ async Entry() {
     }
 }
 
- async getEntry() {
-    // Moment now timezone Sao Paulo
-    this.init()
-
-    setInterval(async () => {   
-    let time = moment().tz('America/Sao_Paulo');
-    // if (this.page != null) {
-    // this.horario.forEach(element => {
-        // if(element == time.format('HH:mm')) {
-            console.log('Entre agora ')
-            // this.horario.splice(this.horario.indexOf(element), 1);
-            // this.Entry()
-            return
+ async updateCurrent() {
+    const elementEntries = await this.page.$$('.entries')
+    const jsonText = await elementEntries[0].getProperty('innerText')
+    const entriesText = await jsonText.jsonValue()
+    const entries = entriesText.split('/n')
+    const current = entries[0]
+    this.current = current
     
-        }, 9000)
-    // }, 7000);
-
-//  }});
-//  }
-
+    setInterval(async () => {
+    const elementEntries = await this.page.$$('.entries')
+    const jsonText = await elementEntries[0].getProperty('innerText')
+    const entriesText = await    jsonText.jsonValue()
+    const entries = entriesText.split('/n')
+    const trueRelation = this.current == entries[0]
+    this.trueRelation = trueRelation
+    console.log(this.trueRelation)    
+    if (this.trueRelation) {
+        console.log('Wait Crash')
+    } else {
+        console.log('Crash')
+        this.getEntry()
     }
-}
 
+
+    this.current = this.current === entries[0] ? this.current : entries[0]
+    
+
+    },  3000)
+ }
+ async getKeyboard() {
+    const keyboard = {}
+    const input = await this.page.$$('input')
+    keyboard.quantia = input[0]
+    keyboard.autoretirar = input[1]
+    const button = await this.page.$$('button')
+    keyboard.send = button[6]
+    keyboard.halft = button[5]
+    keyboard.double = button[4]
+    return keyboard
+ }
+ async getEntry() {
+    console.log('Get Entry')
+    // Moment now timezone Sao Paulo
+    setTimeout(async () => {
+    const keyboard = await this.getKeyboard()
+    console.log(keyboard)   
+    }, 4000)
+
+}
+}
 
 
 module.exports = Blaze;
