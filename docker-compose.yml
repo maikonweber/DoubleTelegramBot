@@ -1,0 +1,29 @@
+version : '3.8'
+services:
+  db: 
+    container_name: binance_robot
+    image: postgres:11.6-alpine
+    restart: always
+    command: postgres -c logging_collector=on -c log_destination=stderr 
+    environment:
+      - POSTGRES_USER=doubletelegram  
+      - POSTGRES_PASSWORD=doubletelegram
+      - POSTGRES_DB=doubletelegram
+      - POSTGRES_HOST=localhost
+      - POSTGRES_INITDB_ARGS=--locale=en_US.UTF-8
+      - POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore
+    
+    ports:
+      - "5932:5432"
+  rabbitMq: 
+    container_name: rabbitMq
+    image: rabbitmq:3-management-alpine
+    ports: 
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - rabbitmq_go_net
+
+networks:
+  rabbitmq_go_net:
+    driver: bridge

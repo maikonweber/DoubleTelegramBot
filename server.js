@@ -5,15 +5,7 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const Blaze = require('./crash');
 const webhooks = require('node-webhooks');
-
-     const {
-          checkToken,
-          countAllSygnal,
-          createUsers,
-          insertUsersToken,
-          getUser,
-     
-        } = require('./database');
+const { getUser } = require('./database');
 
 app.post('/api/v1/setCrash', async (req, res) => {
           console.log(req)
@@ -25,17 +17,24 @@ app.post('/api/v1/setCrash', async (req, res) => {
           console.log(horario, valor, username, password, autoretirar)
           const blaze = new Blaze(valor, username, password, horario, autoretirar)
           await blaze.getEntry()
-          res.json('You have set the blaze at ')
-          const hook = 
+          res.json('You have set the blaze at ') 
         })
 
+app.post('/login', async (req, res) => {
+            const { username, password } = req.body
+            const user = await getUser(username)
+            if(user.password === password){
+                res.json({
+                    message: 'Login efetuado com sucesso'
+                })
+            } else {
+                res.json({
+                    message: 'Erro ao efetuar o login'
+                })
+            }
+        })       
 
-const registerHooks = () => {
-          return new webhooks({
-              db: {
-                  'callback_hook': ['http://localhost:8005/webhook-client']
-              }
-          });
-      }
-
-
+app.post('/api/v1/getCrash', async (req, res) => {
+    // Set Webhooks
+   
+})
