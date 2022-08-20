@@ -4,19 +4,17 @@ const bot = new Telegraf('5189315995:AAF7Ei5ozq6kHLSZTWHS_Xjy0ku-u-cxmfc')
 
 bot.start((ctx) => ctx.reply('Welcome'))
 bot.command('login', (ctx) => {
+    var obj = {}
     ctx.reply('Bem vindo ao Bot de Blaze')
     ctx.reply('Digite o seu email')     
     bot.on('text', (ctx) => {
     var email = ctx.message.text
+    obj.email = email
     ctx.reply('Digite a sua senha')
-    })
-    bot.on('text', (ctx) => {
+    ctx.on('text', (ctx) => {
     var senha = ctx.message.text
-    ctx.reply('Executando o login')
-    axios.post('http://localhost:3000/login', {
-        email: email,
-        senha: senha
-    }).then(function (response) {
+    obj.senha = senha
+    axios.post('http://localhost:3051/login', obj).then(function (response) {
         console.log(response.data)
         ctx.reply('Login efetuado com sucesso')
         ctx.reply(`${JSON.stringify(response.data)}`)
@@ -25,8 +23,7 @@ bot.command('login', (ctx) => {
         ctx.reply('Erro ao efetuar o login')
         })
     })
-
-
+})
 })  
 
 bot.help((ctx) => ctx.reply('Send me a sticker'))

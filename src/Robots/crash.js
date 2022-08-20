@@ -6,11 +6,9 @@ puppeteer.use(StealthPlugin());
 const moment = require('moment-timezone');
 const redis = require('ioredis')
 const client = new redis();
-const Mq = require('./mq')
-const MQ = new Mq();
+const MQ = require('../../mq');
 
-
-class Blaze extends MQ {
+class Crash {
     // Initial puppeter
     constructor (username, password, worktime, martingalePercent, sorogalePercent, maxlossPercent, valor) {
         this.browser = null;
@@ -34,14 +32,18 @@ class Blaze extends MQ {
         this.sorogalePercent = sorogalePercent;
         this.maxlossPercent = maxlossPercent;
         this.trueRelation = true;
+        this.scheduled;
         // this.horario = horario;
         // this.valor = valor;
         // this.autoretirar = autoretirar;    
     }
 
+
+
 async init() {
+    console.log('Initilizing Crash Bot')
     this.browser = await puppeteer.launch({
-        headless: true,
+        headless: false,
         ignoreHTTPSErrors: true,
         // Set Proxy for IP address BRAZIL
         args: [
@@ -67,6 +69,7 @@ async init() {
     // get body text
     let text = await body[0].getProperty('innerText')
     // Get input wrappers
+    
     let input =  await this.page.$$('input')
     await this.page.waitForTimeout(3000)
     await input[1].type(this.username)
@@ -74,6 +77,7 @@ async init() {
     await this.page.waitForTimeout(3000)
     let button = await this.page.$$('button')
     console.log(button)
+
     await this.page.keyboard.press('Enter')
     await this.page.waitForTimeout(3000)
     await this.page.goto('https://blaze.com/pt/games/crash');
@@ -86,7 +90,7 @@ async init() {
     await this.updateCurrent()
     // await this.page.waitForTimeout(7000)
         // let body = await this.page.$$('body')
-        // // get body text
+        // // get body text yes
         // console.log(body)
         // let text = await body[0].getProperty('innerText')
         // // get body text
@@ -118,6 +122,7 @@ async init() {
         //     console.log('Erro', error)
         // }
 }
+
 
 async Entry() {
     try {
@@ -179,16 +184,26 @@ async Entry() {
     keyboard.double = button[4]
     return keyboard
  }
+
+ async schedule(msg) {
+    let msg1 = JSON.parse(msg)
+    this.scheduled = msg1
+ }
+
  async getEntry() {
     console.log('Get Entry')
-    // Moment now timezone Sao Paulo
     setTimeout(async () => {
+    if(this.schedule) {
     const keyboard = await this.getKeyboard()
-    console.log(keyboard)   
-    }, 4000)
+    await keyboard['quantia'].type(this.schedule.valor)
+    await keyboard['autoretirar'].type(this.schedule.retirar)
+    await keyboard['send'].click()
+
+    }
+}, 4000)
 
 }
 }
 
 
-module.exports = Blaze;
+module.exports = Crash;
