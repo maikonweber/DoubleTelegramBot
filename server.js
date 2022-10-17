@@ -20,7 +20,6 @@ const { getUser } = require('./database');
 //           res.json('You have set the blaze at ') 
 //         })
 
-
 app.post('/login', async (req, res) => {
             const { email, senha } = req.body
             const user = await getUser(username)
