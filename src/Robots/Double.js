@@ -6,9 +6,6 @@ puppeteer.use(StealthPlugin());
 const moment = require('moment-timezone');
  
 
-
-
-
 class Blaze {
     // Initial puppeter
     constructor (valor, username, password, horario, autoretirar) {

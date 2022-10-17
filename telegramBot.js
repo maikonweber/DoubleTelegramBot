@@ -1,32 +1,18 @@
-const { Telegraf } = require('telegraf')
-const axios = require('axios')
-const bot = new Telegraf('5189315995:AAF7Ei5ozq6kHLSZTWHS_Xjy0ku-u-cxmfc')
+const telegram = require('node-telegram-bot-api');
+console.log(telegram)
+const axios = require('axios');
+const token = '5189315995:AAF7Ei5ozq6kHLSZTWHS_Xjy0ku-u-cxmfc'
+const {
+    setUserAndPreference,
+    UnsetUser,
+    setChatIdLoginAndPassword
+} = require('./redisFuction')
+ /* Polling mantem a conexão com )HTTP  */
+const bot = new telegram(token, {
+    polling: true
+});
 
-bot.start((ctx) => ctx.reply('Welcome'))
-bot.command('login', (ctx) => {
-    var obj = {}
-    ctx.reply('Bem vindo ao Bot de Blaze')
-    ctx.reply('Digite o seu email')     
-    bot.on('text', (ctx) => {
-    var email = ctx.message.text
-    obj.email = email
-    ctx.reply('Digite a sua senha')
-    ctx.on('text', (ctx) => {
-    var senha = ctx.message.text
-    obj.senha = senha
-    axios.post('http://localhost:3051/login', obj).then(function (response) {
-        console.log(response.data)
-        ctx.reply('Login efetuado com sucesso')
-        ctx.reply(`${JSON.stringify(response.data)}`)
-        }).catch(function (error) {
-        console.log(error)
-        ctx.reply('Erro ao efetuar o login')
-        })
-    })
+bot.on('message', ({ from, chat }) => {
+    setChatIdLoginAndPassword()
+    bot.sendMessage(from.id, 'Ola');
 })
-})  
-
-bot.help((ctx) => ctx.reply('Send me a sticker'))
-bot.on('sticker', (ctx) => ctx.reply('👍'))
-bot.hears('hi', (ctx) => ctx.reply('Hey there'))
-bot.launch()

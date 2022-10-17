@@ -7,18 +7,6 @@ const cookieParser = require('cookie-parser');
 // const webhooks = require('node-webhooks');
 const { getUser } = require('./database');
 
-// app.post('/api/v1/setCrash', async (req, res) => {
-//           console.log(req)
-//           const horario = req.body.horario
-//           const valor = req.body.valor
-//           const username = req.body.username
-//           const password = req.body.password
-//           const autoretirar = req.body.autoretirar
-//           console.log(horario, valor, username, password, autoretirar)
-//           const blaze = new Blaze(valor, username, password, horario, autoretirar)
-//           await blaze.getEntry()
-//           res.json('You have set the blaze at ') 
-//         })
 
 app.post('/login', async (req, res) => {
             const { email, senha } = req.body

@@ -167,10 +167,7 @@ async Entry() {
         this.getEntry()
     }
 
-
-    this.current = this.current === entries[0] ? this.current : entries[0]
-    
-
+    this.current = this.current === entries[0] ? this.current : entries[0]    
     },  3000)
  }
  async getKeyboard() {
@@ -199,10 +196,9 @@ async Entry() {
     await keyboard['autoretirar'].type(this.schedule.retirar)
     await keyboard['send'].click()
 
+             }
+        }, 4000)
     }
-}, 4000)
-
-}
 }
 
 
