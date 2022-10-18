@@ -33,29 +33,33 @@ app.use('/v1', (req, res, next) => {
   }
 })
 
-app.get('/v1/crash', async (req, res) => {
-  const { keyword } = req.params
-  try {
-              const crash = new Crash(
-                          'm.carvalho@grouplinknetwork.com',
+/*
+  'm.carvalho@grouplinknetwork.com',
                           'Ma128sio5',
                           10,
                           0.5,
                           0.5,
                           0.5,
                           100
+*/
+
+app.post('/crash', async (req, res) => {
+  const { username, senha, worktime, martingale, sorogales, maxloss, valor  } = req.body
+  try {
+              const crash = new Crash(
+                  username, senha, worktime, martingale, sorogales, maxloss, valor          
               );
 
-              crash.init().then().catch(err => {
-                          console.log(err)
-                          res.status(200).send(crash);
+              crash.init().then((el) => {
+              res.status(200).send(el)         
+              }).catch(err => {
+              
+              
               })
   } catch (e) {
               res.status(500).send(e);
   }
 })
-
-
 
 app.listen(port, () => {
   console.log('App Express is Running, '  + port);
