@@ -1,5 +1,4 @@
 // const hasher = require('./hasher')
-const crypto = require('crypto')
 
 var pg = require('pg');
 let client = {
@@ -9,8 +8,6 @@ let client = {
     user: 'doubletelegram',
     password: 'doubletelegram'
 };
-const crypto = require('crypto');
-
 
 
 let pool = new pg.Pool(client);
@@ -37,7 +34,7 @@ async function getTokenIsValid(token) {
 }
 
 async function registerToken(token, users_id) {
-    const query = `INSERT INTO users_token (token, users_id) VALUES ($1, $2);`
+    const query = `INSERT INTO token_users (token, user_id) VALUES ($1, $2);`
     const result = await pool.query(query, [token, users_id]);
     return 
 }

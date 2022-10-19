@@ -1,7 +1,7 @@
 const express = require('express');
-const appWs = require('./app-ws');
 const redis = require('ioredis');
 var bodyParser = require('body-parser')
+const crypto = require('crypto');
 const {
   getUser,
   registerToken,

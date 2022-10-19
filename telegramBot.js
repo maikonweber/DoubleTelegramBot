@@ -15,7 +15,7 @@ bot.command(['help'], (ctx) => {
    ctx.reply(helpMessage);
 })
 
-bot.command(['login'], async (ctx) => {
+bot.command(['login'], async (ctx, next) => {
   console.log(ctx.message.text);
   const inputuser = ctx.message.text.split(" ");
   const email = inputuser[1];
@@ -33,9 +33,18 @@ bot.command(['login'], async (ctx) => {
 }).then(el => {
     console.log(el)
     ctx.state.token = el.token;
-    return ctx.reply(el.data.message);
+    ctx.reply(el.data.message);
+    return next(ctx)
   });
 });
+
+bot.command(['start'], async (ctx, next) => {
+  console.log(ctx.state)
+  
+})
+
+
+
 
 
 
