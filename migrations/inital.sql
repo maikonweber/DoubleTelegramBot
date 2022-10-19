@@ -6,15 +6,21 @@ create table users (
   created_at timestamp not null default now()
 );
 
-create table payament (
+create table payament_value (
   id serial primary key,
-  user_id integer not null,
-  value integer not null,
+  user_id integer references users(id),
+  pay boolean not null,
   created_at timestamp not null default now()
 );
 
 create table payament_time (
-    user_id integer not null,
+    user_id integer references users(id),
     value integer not null,
     last_update timestamp not null default now()
 )
+
+create table token_users (
+    token text not null,
+    created_at timestamp not null default now(),
+    user_id integer references users(id) 
+);

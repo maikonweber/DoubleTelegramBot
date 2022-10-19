@@ -32,14 +32,11 @@ bot.command(['login'], async (ctx) => {
   }
 }).then(el => {
     console.log(el)
+    ctx.state.token = el.token;
     return ctx.reply(el.data.message);
   });
-//  console.log(result);
-  // if(result) {
-  // ctx.state.token = result
-  // await next(ctx)
-  // }
-})
+});
+
 
 
 

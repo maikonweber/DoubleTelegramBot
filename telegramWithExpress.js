@@ -9,6 +9,8 @@ const {
 } = require('./database');
 const Crash  = require('./src/Robots/crash');
 const client = new redis();
+const crypto = require('crypto');
+
 require('dotenv').config()
 const port = 3053;
 
@@ -27,15 +29,23 @@ app.get('/', (req, res) => res.send('Hello World!'))
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
   const user = await getUser(email, password);
-  if (!user) {
+    if (!user) {
   res.send({message : 'Não foi localizado seu usuário, Faça seu cadastro aqui : https://muttercorp.online'}).status(400);
   } else {
-  res.send({message : 'Bem Vindo ao CrashDoubleTelgram', token: '091x082'}).status(200);
+  const secret = "X64as5861to156";
+  const payload =  JSON.stringify({"email" : email, "password" : password});
+  const header = JSON.stringify({"alg": "HS256", "typ": "JWT"})
+  const base64Header = Buffer.from(header).toString('base64').replace(/=/g, '');
+  const base64Payload = Buffer.from(payload).toString('base64').replace(/=/g, '');
+  const data =  base64Header + '.' + base64Payload;
+  const token = crypto.createHmac('sha256', secret).update(data).digest('base64');
+  res.json({message : 'Bem Vindo ao CrashDoubleTelgram', token: token}).status(200);
   };
 })       
 
 app.use('/v1', (req, res, next) => {
-  if(req.headers.token == 'xxxx1xx2') {
+  
+  if(req.headers.token == '091x082') {
     next();
   }
 })
