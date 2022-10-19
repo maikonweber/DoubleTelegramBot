@@ -1,25 +1,18 @@
 const express = require('express');
 const appWs = require('./app-ws');
 const redis = require('ioredis');
-
 var bodyParser = require('body-parser')
-
 const {
-  getUser
+  getUser,
+  registerToken,
+  getTokenIsValid
 } = require('./database');
 const Crash  = require('./src/Robots/crash');
 const client = new redis();
-const crypto = require('crypto');
-
-require('dotenv').config()
+require('dotenv').config();
 const port = 3053;
-
-const app = express()
-
-// parse application/x-www-form-urlencodedc
+const app = express();
 app.use(bodyParser.urlencoded({ extended: false }))
-
-// parse application/json
 app.use(bodyParser.json())
 
 
@@ -39,39 +32,32 @@ app.post('/login', async (req, res) => {
   const base64Payload = Buffer.from(payload).toString('base64').replace(/=/g, '');
   const data =  base64Header + '.' + base64Payload;
   const token = crypto.createHmac('sha256', secret).update(data).digest('base64');
+  await registerToken(token, user.id);
   res.json({message : 'Bem Vindo ao CrashDoubleTelgram', token: token}).status(200);
   };
 })       
 
 app.use('/v1', (req, res, next) => {
-  
-  if(req.headers.token == '091x082') {
+  const token = req.header.token
+  const result = getTokenIsValid(token);
+  if(result.pay === true) {
     next();
+  } else if (!result) {
+    res.json('Tente fazer login novamente').status(200);
+  } else if (result.pay === false) {
+    res.json('Ocorreu um erro, você ainda não pagou a mensalidade deste mês');
   }
 })
 
-/*
-  'm.carvalho@grouplinknetwork.com',
-                          'Ma128sio5',
-                          10,
-                          0.5,
-                          0.5,
-                          0.5,
-                          100
-*/
-
-app.post('/crash', async (req, res) => {
+app.post('/v1/crash', async (req, res) => {
   const { username, senha, worktime, martingale, sorogales, maxloss, valor  } = req.body
   try {
-              const crash = new Crash(
-                  username, senha, worktime, martingale, sorogales, maxloss, valor          
-              );
-
+      const crash = new Crash(
+            username, senha, worktime, martingale, sorogales, maxloss, valor          
+            );
               crash.init().then((el) => {
               res.status(200).send(el)         
               }).catch(err => {
-              
-              
               })
   } catch (e) {
               res.status(500).send(e);

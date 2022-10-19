@@ -32,7 +32,6 @@ async function getTokenIsValid(token) {
     JOIN payament_value pv
     ON pv.user_id = u.t.user_id
     WHERE token = $1;`
-    
     const result = await pool.query(query, [token]);
     return result.rows[0];
 }
@@ -46,6 +45,8 @@ async function registerToken(token, users_id) {
 
 module.exports = { 
     getUser,
+    registerToken,
+    getTokenIsValid
   }
 
 
