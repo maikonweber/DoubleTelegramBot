@@ -1,90 +1,52 @@
 
 const token = '5189315995:AAF7Ei5ozq6kHLSZTWHS_Xjy0ku-u-cxmfc'
-const { Telegraf } =  require('telegraf');
-const { Scenes, Stage }  = require('telegraf');
+const {  Telegraf } = require('telegraf');
+const bot = new Telegraf(token)
 const axios = require('axios');
 
-const {
-  getChatIDandName,  
-  setUserAndPreference,
-    UnsetUser,
-    setChatIDandName,
-    setChatIdLoginAndPassword
-} = require('./redisFuction')
-const bot = new Telegraf(token)
+const helpMessage = `
+  Este são os commandos;
+  /login <email> <password> - Login,
+  /help - command reference;
+`
 
-const contactDataWizard = new Scenes.WizardScene(
-  'start', (ctx) => {
-    console.log('Start this ')
-    ctx.reply('Qual jogo você quer Jogar');
-    ctx.wizard.state.contactData = {}
-    return ctx.wizard.next();
-  },
-  (ctx) => {
-  if(ctx.message.text.length < 2) {
-      ctx.reply('Por Favor Digite um Email');
-      return
+
+bot.command(['help'], (ctx) => {
+   ctx.reply(helpMessage);
+})
+
+bot.command(['login'], async (ctx) => {
+  console.log(ctx.message.text);
+  const inputuser = ctx.message.text.split(" ");
+  const email = inputuser[1];
+  const password = inputuser[2];
+  let body = {
+    "password" : password,
+    "email" : email
   }
-  ctx.wizard.state.contactData.fil = ctx.message.text;
-  ctx.reply('Digite sua Senha');
-  return ctx.wizard.next();
-},
- async (ctx) => {
-    ctx.wizard.contactData.password = ctx.message.text;
-    ctx.reply('Set Martingale Number');
-    return ctx.wizard.next();
- },
- async (ctx) => {
-  ctx.wizard.contactData.martigale = ctx.message.text;
-  ctx.reply('Set Sorogale Porcent');
-  return ctx.wizard.next();
- },
- async (ctx) => {
-  ctx.wizard.contactData.sorogale = ctx.message.text;
-  ctx.reply('Set Sorogale Porcent');
-  return ctx.wizard.next();
- },
- async (ctx) => {
-  ctx.wizard.contactData.worktime = ctx.message.text;
-  ctx.reply('Set Valor das Entradas');
-  return ctx.wizard.next();
- },
- async (ctx) => {
-  ctx.wizard.contactData.valor = ctx.message.text;
-  ctx.reply('Set maxloss das Entradas');
-  return ctx.wizard.next();
- },
- async (ctx) => {
-  ctx.wizard.contactData.maxloss = ctx.message.text;
-  ctx.reply('Set winstop das Entradas');
-  return ctx.wizard.next();
- },
- async (ctx) => {
-  ctx.wizard.contactData.winstop = ctx.message.text;
-  ctx.reply('Deseja iniciar a entradas');
-  return ctx.wizard.next();
- },
- async (ctx) => {
-  const body = {}
-  body.username = ctx.wizard.contactData.fio
-  body.password = ctx.wizard.contactData.password
-  body.martigale = ctx.wizard.contactData.martigale
-  body.sorogale = ctx.wizard.contactData.sorogale
-  body.maxloss = ctx.wizard.contactData.valor
-  body.winstop = ctx.wizard.contactData.maxloss
-  body.valor = ctx.wizard.contactData.winstop
-  ctx.wizard.contactData.valor = ctx.message.text;
-  await axios.post('http://localhost:3053/crash', body);
-  ctx.reply('Seu Bot foi Configurado');
-  return ctx.scene.leave();
- }
-)
+
+  body = JSON.stringify(body);
+  console.log(body);
+  axios({method: 'post', url : 'http://localhost:3053/login', data : {
+    password, email
+  }
+}).then(el => {
+    console.log(el)
+    return ctx.reply(el.data.message);
+  });
+//  console.log(result);
+  // if(result) {
+  // ctx.state.token = result
+  // await next(ctx)
+  // }
+})
 
 
 
-// to  be precise, session is not a must have for Scenes to work, but it sure is lonely without one
-bot.hears('start',  contactDataWizard.enter('start'));
-// bot.use(async (ctx, next) => {
+
+
+
+// to  be precise, session is> {
 //   const start = new Date();
 //   await next();
 //   const ms = new Date() - start;
@@ -116,3 +78,4 @@ bot.hears('start',  contactDataWizard.enter('start'));
 
 
 bot.launch()
+

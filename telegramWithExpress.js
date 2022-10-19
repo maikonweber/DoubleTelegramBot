@@ -1,6 +1,12 @@
 const express = require('express');
 const appWs = require('./app-ws');
 const redis = require('ioredis');
+
+var bodyParser = require('body-parser')
+
+const {
+  getUser
+} = require('./database');
 const Crash  = require('./src/Robots/crash');
 const client = new redis();
 require('dotenv').config()
@@ -8,23 +14,24 @@ const port = 3053;
 
 const app = express()
 
+// parse application/x-www-form-urlencodedc
+app.use(bodyParser.urlencoded({ extended: false }))
+
+// parse application/json
+app.use(bodyParser.json())
+
+
 app.get('/', (req, res) => res.send('Hello World!'))
 // Set the bot API endpoin
 
 app.post('/login', async (req, res) => {
-  const { email, senha } = req.body
-  const user = await getUser(username)
-  console.log(user)
-  console.log(email, senha)
-  if(user.senha === senha){
-      res.json({
-          message: 'Login efetuado com sucesso'
-      })
+  const { email, password } = req.body;
+  const user = await getUser(email, password);
+  if (!user) {
+  res.send({message : 'Não foi localizado seu usuário, Faça seu cadastro aqui : https://muttercorp.online'}).status(400);
   } else {
-      res.json({
-          message: 'Erro ao efetuar o login'
-      })
-  }
+  res.send({message : 'Bem Vindo ao CrashDoubleTelgram', token: '091x082'}).status(200);
+  };
 })       
 
 app.use('/v1', (req, res, next) => {
@@ -64,5 +71,3 @@ app.post('/crash', async (req, res) => {
 app.listen(port, () => {
   console.log('App Express is Running, '  + port);
   })
-  
-appWs(app)
