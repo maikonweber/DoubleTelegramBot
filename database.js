@@ -21,13 +21,25 @@ async function getUser(login, password) {
 }
 
 
+async function getUserBlaze(users_id) {
+    const query = `
+        Select * from users u
+        JOIN users_blaze  ab
+        ON u.id = ab.users_id
+        WHERE users_id = $1;    
+    `
+
+    const result = await pool.query(query, [users_id])
+    return result.rows[0];
+}
+
 
 async function getTokenIsValid(token) {
     const query = `
     Select * 
-    FROM users_token ut
+    FROM token_users ut
     JOIN payament_value pv
-    ON pv.user_id = u.t.user_id
+    ON pv.user_id = ut.user_id
     WHERE token = $1;`
     const result = await pool.query(query, [token]);
     return result.rows[0];

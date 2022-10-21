@@ -6,6 +6,16 @@ create table users (
   created_at timestamp not null default now()
 );
 
+create table users_blaze (
+  id serial primary key,
+  password_ varchar(255) not null,
+  username_ varchar(255) not null,
+  created_at timestamp not null default now(),
+  users_id integer references users(id)
+  );
+  
+
+
 create table payament_value (
   id serial primary key,
   user_id integer references users(id),

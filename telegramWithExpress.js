@@ -35,11 +35,14 @@ app.post('/login', async (req, res) => {
   await registerToken(token, user.id);
   res.json({message : 'Bem Vindo ao CrashDoubleTelgram', token: token}).status(200);
   };
-})       
+})
 
-app.use('/v1', (req, res, next) => {
-  const token = req.header.token
-  const result = getTokenIsValid(token);
+
+app.use('/v1', async (req, res, next) => {
+  const token = req.headers.token
+  console.log(token, "token")
+  const result = await getTokenIsValid(token);
+  req.users = result 
   if(result.pay === true) {
     next();
   } else if (!result) {
@@ -50,7 +53,8 @@ app.use('/v1', (req, res, next) => {
 })
 
 app.post('/v1/crash', async (req, res) => {
-  const { username, senha, worktime, martingale, sorogales, maxloss, valor  } = req.body
+  const { worktime, martingale, sorogales, maxloss, valor  } = req.body
+
   try {
       const crash = new Crash(
             username, senha, worktime, martingale, sorogales, maxloss, valor          
@@ -64,6 +68,7 @@ app.post('/v1/crash', async (req, res) => {
   }
 })
 
+
 app.listen(port, () => {
   console.log('App Express is Running, '  + port);
-  })
+})

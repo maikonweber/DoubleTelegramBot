@@ -12,21 +12,26 @@ async function UnsetUser({user, martingale, sorogales, list, channel, game}){
 }
 
 
-async function setChatIDandName(first_name, last_name, chatid) {
+async function setChatIDandName(chatid, first_name, last_name) {
     return redis.set(`${chatid}_${last_name}_${first_name}`)
 }
 
 
-async function getChatIDandName(first_name, last_name, chatid) {
-  return redis.get(`${chatid}_${last_name}_${first_name}`)
+async function getChatIDandName(chatid, first_name, last_name) {
+  console.log(`${chatid}_${last_name}_${first_name}`)
+  return redis.get(`${last_name}_${first_name}_${chatid}`)
 }
 
 
-async function setChatIdLoginAndPassword(first_name, last_name, chatid, login, password) {
-  const object = {}
-  object.login;
-  object.password;
-  return redis.set(`${chatid}_${last_name}_${first_name}`, object);
+async function setChatIdLoginAndPassword(chatid, first_name, last_name, token) {
+  console.log(`${chatid}_${last_name}_${first_name}`)
+  return redis.set(`${last_name}_${first_name}_${chatid}`, JSON.stringify(token));
+}
+
+async function flushall () {
+  redis.flushdb( function (err, succeeded) {
+    console.log(succeeded); // will be true if successfull
+});
 }
 
 
@@ -45,4 +50,5 @@ module.exports = {
     getSessionKey,
     setChatIDandName,
     getChatIDandName,
+    flushall
   }
