@@ -11,7 +11,9 @@ const helpMessage = `
   Este são os commandos;
   /login <email> <password> - Login,
   /help - command reference;
-`
+  /game_crash $<valor> #<martingale:numeral> $<sorosgale:porcentagem> @<maxloss:porcentagem> &<stopWin>
+  /game_double $<valor> #<martingale:numeral> $<sorosgale:porcentagem> @<maxloss:porcentagem> &<stopWin> 
+  `
 
 
 bot.command(['help'], (ctx) => {
@@ -68,12 +70,49 @@ bot.command(['game_crash'], async (ctx, next) => {
         "token": users_token.token
       },
       data: {
-        "password": password,
-        "username": username,
-        "martingale": martingale,
-        "sorogale": sorogale,
-        "maxloss": maxloss,
-        "meta": meta,
+        username,
+        password,      
+        martingale,
+        sorogale,
+        maxloss,
+        meta,
+      }
+    }).then(el => {
+      console.log(el.data);
+      ctx.reply('Iniciando o Bot');
+    })
+  } catch (e) {
+    return ctx.reply('Ocorreu um erro na sua solicitação a API, Por favor entre em contato conosco, Faço seu Registro e Utilize o Bot');
+  }
+})
+
+bot.command(['game_double'], async (ctx, next) => {
+  const from = ctx.message.from
+  const splitText =  ctx.message.text.split(" ");
+  console.log(splitText);
+
+  let users_token = await getChatIDandName(from.id, from.first_name, from.last_name);
+  users_token = JSON.parse(users_token);
+  const password = 'Ma128sio4';
+  const username = "maikonweber@gmail.com";
+  const martingale = 2;
+  const sorogale = 10;
+  const meta = 20;
+  const maxloss = 20;
+  try {
+    axios({
+      method: 'post',
+      url: 'http://localhost:3053/v1/double',
+      headers: {
+        "token": users_token.token
+      },
+      data: {
+        username,
+        password,      
+        martingale,
+        sorogale,
+        maxloss,
+        meta,
       }
     }).then(el => {
       console.log(el.data);
@@ -83,6 +122,7 @@ bot.command(['game_crash'], async (ctx, next) => {
     return ctx.reply('Ocorreu um erro na sua solicitação a API, Por favor entre em contato conosco');
   }
 })
+
 
 process.once('SIGINT', () => {
   flushall().then()

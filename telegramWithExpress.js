@@ -53,19 +53,19 @@ app.use('/v1', async (req, res, next) => {
 })
 
 app.post('/v1/crash', async (req, res) => {
-  const { worktime, martingale, sorogales, maxloss, valor  } = req.body
-
-  try {
-      const crash = new Crash(
-            username, senha, worktime, martingale, sorogales, maxloss, valor          
-            );
-              crash.init().then((el) => {
-              res.status(200).send(el)         
-              }).catch(err => {
-              })
-  } catch (e) {
-              res.status(500).send(e);
-  }
+  console.log(req.body);
+  const token = req.headers.token
+  const getUser = getTokenAndUserInformation();
+  const { worktime, martingale, sorogales, maxloss, valor, canal} = req.body
+  console.log('Start This Shit')
+  await setUserIsQueue('chatId_username_token', { 
+     worktime,
+     martingale, 
+     sorogales,
+     maxloss,
+     valor,
+     canal})
+  res.json("Sua posição foi posicionada aguarde os Resultados").status(200)/* Expirart em worktime */
 })
 
 

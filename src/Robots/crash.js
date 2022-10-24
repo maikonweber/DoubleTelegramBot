@@ -38,8 +38,6 @@ class Crash {
         // this.autoretirar = autoretirar;    
     }
 
-
-
 async init() {
     console.log('Initilizing Crash Bot')
     this.browser = await puppeteer.launch({
@@ -61,25 +59,23 @@ async init() {
 
     this.page = await this.browser.newPage();
     await this.page.goto('https://blaze.com/pt/games/crash');
-    await this.page.waitForTimeout(8000)
+    await this.page.waitForTimeout(1000)
     await this.page.goto('https://blaze.com/pt/?modal=auth&tab=login');
     console.log('Try Logging in')
-    await this.page.waitForTimeout(3000)
+    await this.page.waitForTimeout(1000)
     let body = await this.page.$$('body')
     // get body text
     let text = await body[0].getProperty('innerText')
-    // Get input wrappers
-    
+    // Get input wrappers    
     let input =  await this.page.$$('input')
-    await this.page.waitForTimeout(3000)
+    await this.page.waitForTimeout(1000)
     await input[1].type(this.username)
     await input[2].type(this.password)
-    await this.page.waitForTimeout(3000)
+    await this.page.waitForTimeout(1000)
     let button = await this.page.$$('button')
     console.log(button)
-
     await this.page.keyboard.press('Enter')
-    await this.page.waitForTimeout(3000)
+    await this.page.waitForTimeout(1000)
     await this.page.goto('https://blaze.com/pt/games/crash');
     await this.page.waitForTimeout(800)
     const thos = await this.page.waitForSelector('.amount')
@@ -115,7 +111,7 @@ async init() {
         //         "bankValue" : ${this.totalValues * this.bankPorcent / 100},
         //         "sorogale" : ${0},
         //         "martingale" : ${0},
-        //         "maxloss" : ${(this.totalValues * this.bankPorcent / 100) * this.lossPercent / 100 } 
+        //  5       "maxloss" : ${(this.totalValues * this.bankPorcent / 100) * this.lossPercent / 100 } 
         //         "lastRetriver" ; ${lastRetrive}   
         //     }`)
         // } catch (error) {

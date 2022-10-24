@@ -4,6 +4,7 @@ var moment = require('moment-timezone');
 // Import redis lib
 const amqp = require('amqplib');
 
+/
 
 module.exports = class MQ {
     constructor(queue) {
@@ -12,7 +13,6 @@ module.exports = class MQ {
         this.channel;
         this.q = queue;
     }
-
    async setupConnection() {
         this.conn = await amqp.connect(this.uri);
         this.channel = await this.conn.createChannel();
@@ -21,7 +21,6 @@ module.exports = class MQ {
 
     send(msg) {
         this.channel.sendToQueue(this.q, Buffer.from(msg));
-        console.log(' [x] Sent %s', msg);
     }
 
     recv() {

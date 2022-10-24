@@ -1,9 +1,9 @@
 module.exports = {
   apps : [{
-    script: './server.js',
+    script: 'telegramBot.js',
     watch: '.'
   }, {
-    script: './telegramBot.js',
+    script: 'telegramWithExpress.js',
     watch: ['.']
   }],
 };

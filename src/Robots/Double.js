@@ -4,7 +4,10 @@ const puppeteer = require("puppeteer-extra");
 puppeteer.use(StealthPlugin());
 // Moment timezone Sao Paulo
 const moment = require('moment-timezone');
- 
+/*
+    * O bot é deve receber apenas os valores sem 
+
+*/
 
 class Blaze {
     // Initial puppeter
@@ -16,7 +19,6 @@ class Blaze {
         this.horario = horario;
         this.valor = valor;
         this.autoretirar = autoretirar;
-    
     }
 
 

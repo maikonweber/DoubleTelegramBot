@@ -34,6 +34,11 @@ async function flushall () {
 });
 }
 
+async function getActiveQueue() {
+  
+}
+
+
 
 function getSessionKey (ctx) {
     if (!ctx.from || !ctx.chat) {
