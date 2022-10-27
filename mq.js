@@ -4,7 +4,7 @@ var moment = require('moment-timezone');
 // Import redis lib
 const amqp = require('amqplib');
 
-/
+
 
 module.exports = class MQ {
     constructor(queue) {
