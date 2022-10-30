@@ -22,6 +22,17 @@ async function getChatIDandName(chatid, first_name, last_name) {
   return redis.get(`${last_name}_${first_name}_${chatid}`)
 }
 
+async function setUserIsQueue(user_id, game,martingale, sorogale, maxloss, maxwin, entryValue) {
+  console.log(`${user_id}_${game}`)
+  return redis.set(`${user_id}_${game}`, {
+      entryValue,
+      martingale, 
+      sorogale,
+      maxloss,
+      maxwin
+  })
+}
+
 
 async function setChatIdLoginAndPassword(chatid, first_name, last_name, token) {
   console.log(`${chatid}_${last_name}_${first_name}`)
@@ -34,8 +45,9 @@ async function flushall () {
 });
 }
 
+
 async function getActiveQueue() {
-  
+    
 }
 
 
@@ -55,5 +67,6 @@ module.exports = {
     getSessionKey,
     setChatIDandName,
     getChatIDandName,
-    flushall
+    flushall,
+    setUserIsQueue
   }

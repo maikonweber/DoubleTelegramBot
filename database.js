@@ -20,6 +20,19 @@ async function getUser(login, password) {
     return result.rows[0];
 }
 
+async function getTokenAndUserInformation(token) {
+    const query = `SELECT password_, username_ 
+                   FROM token_users tu 
+                   JOIN users_blaze ub 
+                   ON tu.user_id = ub.users_id 
+                   WHERE token = $1
+                   ORDER BY tu.created_at 
+                   DESC LIMIT 1;
+                   `
+        const result = await pool.query(query, [token])
+        return result.rows
+    }
+ 
 
 async function getUserBlaze(users_id) {
     const query = `
@@ -55,7 +68,8 @@ async function registerToken(token, users_id) {
 module.exports = { 
     getUser,
     registerToken,
-    getTokenIsValid
+    getTokenIsValid,
+    getTokenAndUserInformation
   }
 
 

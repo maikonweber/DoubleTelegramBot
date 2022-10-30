@@ -29,9 +29,7 @@ bot.command(['login'], async (ctx, next) => {
     "password": password,
     "email": email
   }
-
   const from = ctx.message.from;
-
   body = JSON.stringify(body);
   console.log(body);
   try {
@@ -56,7 +54,13 @@ bot.command(['game_crash'], async (ctx, next) => {
   const from = ctx.message.from
   let users_token = await getChatIDandName(from.id, from.first_name, from.last_name);
   users_token = JSON.parse(users_token);
-  const password = 'ma128sio4';
+  const message = from.text;
+  if(message) {
+    const splitMessage = message.split('')
+    console.log(splitMessage)
+    
+  }
+  const password = 'ma128sio4'
   const username = "maikonweber@gmail.com";
   const martingale = 2;
   const sorogale = 10;
