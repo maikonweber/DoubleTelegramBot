@@ -15,3 +15,14 @@ services:
     
     ports:
       - "5932:5432"
+  rabbitmq3: 
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+        - 5672:5672
+        - 15672:15672
+    networks:
+        - rabbitmq_go_net
+networks:
+  rabbitmq_go_net:
+    driver: bridge

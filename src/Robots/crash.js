@@ -28,7 +28,7 @@ class Crash {
         this.waitingResult = false;
         this.webSocket;
         this.clientRabbit;
-        this.martingalePercent = martingalePercent;
+        this.martingalePercent = martingale;
         this.sorogalePercent = sorogalePercent;
         this.maxlossPercent = maxlossPercent;
         this.trueRelation = true;
@@ -151,7 +151,7 @@ async Entry() {
     setInterval(async () => {
     const elementEntries = await this.page.$$('.entries')
     const jsonText = await elementEntries[0].getProperty('innerText')
-    const entriesText = await    jsonText.jsonValue()
+    const entriesText = await jsonText.jsonValue()
     const entries = entriesText.split('/n')
     const trueRelation = this.current == entries[0]
     this.trueRelation = trueRelation

@@ -32,6 +32,29 @@ async function getTokenAndUserInformation(token) {
         const result = await pool.query(query, [token])
         return result.rows
     }
+
+
+async function getAllUsersPayment() {
+    const query = `SELECT email, users_id, pay, users_id, username_, password_ from users 
+    JOIN users_blaze 
+    ON users.id = users_blaze.users_id 
+    JOIN payament_value 
+    ON payament_value.user_id = users.id;
+    `;
+
+    const result = await pool.query(query)
+    console.log(result.rows);
+    return result.rows
+    //   return result.rows.map(el => {
+        // return {
+        //     "email" : el.email,
+        //     "pay" : el.pay,
+        //     "users_id" : el.users_id,
+        //     "username" : el.username_,
+        //     "password" : el.password_
+        //      }
+   // })
+}
  
 
 async function getUserBlaze(users_id) {

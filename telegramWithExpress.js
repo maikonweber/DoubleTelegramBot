@@ -3,6 +3,8 @@ const {
   setUserIsQueue
 } = require('./redisFuction.js');
 
+const MQ = require('./mq');
+
 var bodyParser = require('body-parser')
 const crypto = require('crypto');
 
@@ -14,7 +16,7 @@ const {
 } = require('./database');
 
 const Crash = require('./src/Robots/crash');
-
+const redis = require('ioredis');
 const client = new redis();
 
 require('dotenv').config();
@@ -63,11 +65,37 @@ app.use('/v1', async (req, res, next) => {
 
 app.post('/v1/crash', async (req, res) => {
   console.log(req.body);
+  const token = req.headers.token 
+  const mq = MQ('crash')
+    const getUser = await getTokenAndUserInformation(token);
+  const { worktime, martingale, sorogales, maxloss, valor, canal } = req.body
+  console.log('Start This Shit')
+  if (queueSetPosition) {
+    mq.setupConnection().then(el => {
+    mq.send(JSON.stringify([ getUser , {
+        "worktime" : worktime,
+        "martingale" : martingale,
+        "maxloss" : maxloss,
+        "valor" : valor,
+        "sorogale" : sorogales,
+        "canal": canal
+    }]))
+    return res.json("Sua posição foi posicionada aguarde os Resultados").status(200)/* Expirart em worktime */
+    })
+  } else {
+    res.json('Sua posição não foi verificada!!!').status(404)
+  }
+ 
+})
+
+
+app.post('/v1/double', async (req, res) => {
+  console.log(req.body);
   const token = req.headers.token
   const getUser = await getTokenAndUserInformation(token);
   const { worktime, martingale, sorogales, maxloss, valor, canal } = req.body
   console.log('Start This Shit')
-  const queueSetPosition = await setUserIsQueue(getUser, worktime, martingale, sorogale, valor, canal, maxloss);
+  const queueSetPosition = client.publisher('double' , JSON.stringify({getUser, worktime, martingale, sorogales, valor, canal, maxloss}));
   if (queueSetPosition) {
     res.json("Sua posição foi posicionada aguarde os Resultados").status(200)/* Expirart em worktime */
   } else {

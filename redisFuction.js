@@ -31,6 +31,7 @@ async function setUserIsQueue(user_id, game,martingale, sorogale, maxloss, maxwi
       maxloss,
       maxwin
   })
+  
 }
 
 
@@ -47,7 +48,7 @@ async function flushall () {
 
 
 async function getActiveQueue() {
-    
+
 }
 
 
