@@ -6,7 +6,7 @@ const mq = new MQ('crash')
 
 mq.setupConnection().then(el => {
   mq.recv().then(el => {
-    console.log(el);
+    console.log(el.content);
   })
 })  /*
 SELECT * from users 

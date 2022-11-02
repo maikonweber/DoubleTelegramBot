@@ -4,7 +4,7 @@ const double = require('./src/Robots/Double.js')
 const MQ = require('./mq');
 
 
-const mq =  MQ('double');
+const mq = new MQ('double');
 
 mq.setupConnection().then(el => {
   mq.recv().then(el => console.log(el));

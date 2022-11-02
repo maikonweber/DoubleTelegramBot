@@ -5,5 +5,15 @@ module.exports = {
   }, {
     script: 'telegramWithExpress.js',
     watch: ['.']
-  }],
+  },
+  {
+    script: 'queueCrash.js',
+    watch: '.'
+  },
+  {
+    script: 'queueDouble.js',
+    watch: ['.']
+  }
+],
+
 };

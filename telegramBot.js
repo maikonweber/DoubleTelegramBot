@@ -33,18 +33,18 @@ bot.command(['login'], async (ctx, next) => {
   body = JSON.stringify(body);
   console.log(body);
   try {
-  axios({
-    method: 'post', url: 'http://localhost:3053/login', data: {
-      password, email
-    }
-  }).then(async el => {
-    await setChatIdLoginAndPassword(from.id, from.first_name, from.last_name, {
-      "token": el.data.token
+    axios({
+      method: 'post', url: 'http://localhost:3053/login', data: {
+        password, email
+      }
+    }).then(async el => {
+      await setChatIdLoginAndPassword(from.id, from.first_name, from.last_name, {
+        "token": el.data.token
+      })
+      ctx.state.token = el.data.token
+      ctx.reply(el.data.message);
     })
-    ctx.state.token = el.data.token
-    ctx.reply(el.data.message);
-  })
-  return next(ctx);
+    return next(ctx);
   } catch (e) {
     ctx.reply('Houve um problema para fazer as chamadas a API');
   }
@@ -53,19 +53,44 @@ bot.command(['login'], async (ctx, next) => {
 bot.command(['game_crash'], async (ctx, next) => {
   const from = ctx.message.from
   let users_token = await getChatIDandName(from.id, from.first_name, from.last_name);
-  users_token = JSON.parse(users_token);
-  const message = from.text;
-  if(message) {
-    const splitMessage = message.split('')
-    console.log(splitMessage)
-    
+  users_token = JSON.parse(users_token)
+  const message = ctx.message.text
+  const body = {
+    valor : 0,
+    martingale : 0,
+    channel : '',
+    sorogale : 0,
+    maxloss : 0,
+    stopwin : 0
   }
-  const password = 'ma128sio4'
-  const username = "maikonweber@gmail.com";
-  const martingale = 2;
-  const sorogale = 10;
-  const meta = 20;
-  const maxloss = 20;
+
+  
+  if (message) {
+    const splitMessage = message.split(' ')
+    console.log(splitMessage)
+    splitMessage.forEach(el => {
+      console.log(el)
+      if (/>/g.test(el)) {
+        body.valor = el.replace(/>/g, '');
+      }
+      if (/#/g.test(el)) {
+        body.martingale = el.replace(/#/g, '');
+      }
+      if (/%/g.test(el)) {
+        body.sorogale = el.replace(/%/g, '')
+      }
+      if (/!/g.test(el)) {
+        body.maxloss = el.replace(/!/g, ' ')
+      }
+      if (/&/g.test(el)) {
+        body.stopwin = el.replace(/&/g, '')
+      }
+      if (/@/g.test(el)) {
+        body.channel = el.replace(/@/g, '')
+      }
+    })
+  }
+
   try {
     axios({
       method: 'post',
@@ -73,14 +98,7 @@ bot.command(['game_crash'], async (ctx, next) => {
       headers: {
         "token": users_token.token
       },
-      data: {
-        username,
-        password,      
-        martingale,
-        sorogale,
-        maxloss,
-        meta,
-      }
+      data: body
     }).then(el => {
       console.log(el.data);
       ctx.reply('Iniciando o Bot');
@@ -92,7 +110,7 @@ bot.command(['game_crash'], async (ctx, next) => {
 
 bot.command(['game_double'], async (ctx, next) => {
   const from = ctx.message.from
-  const splitText =  ctx.message.text.split(" ");
+  const splitText = ctx.text.split(" ");
   console.log(splitText);
 
   let users_token = await getChatIDandName(from.id, from.first_name, from.last_name);
@@ -110,14 +128,7 @@ bot.command(['game_double'], async (ctx, next) => {
       headers: {
         "token": users_token.token
       },
-      data: {
-        username,
-        password,      
-        martingale,
-        sorogale,
-        maxloss,
-        meta,
-      }
+      data: body 
     }).then(el => {
       console.log(el.data);
       ctx.reply('Iniciando o Bot');
