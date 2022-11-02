@@ -110,17 +110,46 @@ bot.command(['game_crash'], async (ctx, next) => {
 
 bot.command(['game_double'], async (ctx, next) => {
   const from = ctx.message.from
+  
+  let users_token = await getChatIDandName(from.id, from.first_name, from.last_name);
   const splitText = ctx.text.split(" ");
   console.log(splitText);
-
-  let users_token = await getChatIDandName(from.id, from.first_name, from.last_name);
   users_token = JSON.parse(users_token);
-  const password = 'Ma128sio4';
-  const username = "maikonweber@gmail.com";
-  const martingale = 2;
-  const sorogale = 10;
-  const meta = 20;
-  const maxloss = 20;
+  const message = ctx.message.text
+  const body = {
+    valor : 0,
+    martingale : 0,
+    channel : '',
+    sorogale : 0,
+    maxloss : 0,
+    stopwin : 0
+  }
+  if (message) {
+    const splitMessage = message.split(' ')
+    console.log(splitMessage)
+    splitMessage.forEach(el => {
+      console.log(el)
+      if (/>/g.test(el)) {
+        body.valor = el.replace(/>/g, '');
+      }
+      if (/#/g.test(el)) {
+        body.martingale = el.replace(/#/g, '');
+      }
+      if (/%/g.test(el)) {
+        body.sorogale = el.replace(/%/g, '')
+      }
+      if (/!/g.test(el)) {
+        body.maxloss = el.replace(/!/g, ' ')
+      }
+      if (/&/g.test(el)) {
+        body.stopwin = el.replace(/&/g, '')
+      }
+      if (/@/g.test(el)) {
+        body.channel = el.replace(/@/g, '')
+      }
+    })
+  }
+
   try {
     axios({
       method: 'post',
@@ -128,10 +157,9 @@ bot.command(['game_double'], async (ctx, next) => {
       headers: {
         "token": users_token.token
       },
-      data: body 
     }).then(el => {
-      console.log(el.data);
-      ctx.reply('Iniciando o Bot');
+      console.log();
+      ctx.reply(el.data);
     })
   } catch (e) {
     return ctx.reply('Ocorreu um erro na sua solicitação a API, Por favor entre em contato conosco');

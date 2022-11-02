@@ -33,6 +33,7 @@ class Crash {
         this.maxlossPercent = maxlossPercent;
         this.trueRelation = true;
         this.scheduled;
+        this.martingalePercent = martingalePercent
         // this.horario = horario;
         // this.valor = valor;
         // this.autoretirar = autoretirar;    
@@ -191,7 +192,6 @@ async Entry() {
     await keyboard['quantia'].type(this.schedule.valor)
     await keyboard['autoretirar'].type(this.schedule.retirar)
     await keyboard['send'].click()
-
              }
         }, 4000)
     }

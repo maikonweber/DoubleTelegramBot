@@ -22,12 +22,7 @@ module.exports = class MQ {
     }
 
     recv() {
-        return this.channel.consume(this.q, (msg) => {
-            if(msg) {
-                const msgString = msg.content.toString()
-                return msg
-        }
-    }, { noAck : true });
+        return this.channel    
     }
 }
 
