@@ -23,6 +23,11 @@ services:
         - 15672:15672
     networks:
         - rabbitmq_go_net
+  redis:
+    image: redislabs/redismod
+    restart: always
+    ports:
+      - '127.0.0.1:6379:6379/tcp'
 networks:
   rabbitmq_go_net:
     driver: bridge
