@@ -48,6 +48,20 @@ app.post('/login', async (req, res) => {
   };
 })
 
+app.use('/v2', async (req, res, next) => {
+  const token = req.headers.token
+  console.log(token, "token")
+  const result = await getTokenIsValid(token);
+  req.users = result
+  if (result.pay === true) {
+    next();
+  } else if (!result) {
+    res.json('Tente fazer login novamente').status(200);
+  } else if (result.pay === false) {
+    res.json('Ocorreu um erro, você ainda não pagou a mensalidade deste mês').status(404);
+  }
+})
+
 
 app.use('/v1', async (req, res, next) => {
   const token = req.headers.token
@@ -62,6 +76,22 @@ app.use('/v1', async (req, res, next) => {
     res.json('Ocorreu um erro, você ainda não pagou a mensalidade deste mês').status(404);
   }
 })
+
+app.post('/v2/observer', async (req, res) => {
+  const token = req.headers.token 
+  const getChannelInformation = getChannelInformation(token)
+  const mq = new MQ('crash')
+  const getUser = await getTokenAndUserInformation(token);
+  const { valor, martingale , channel, sorogale, maxloss, stopwin } = req.body
+  console.log('Start This Shit')
+  mq.setupConnection().then(el => {
+  mq.send(JSON.stringify([ getUser , {
+        martingale, valor, channel, sorogale, maxloss, stopwin
+    }]))
+    return res.json("Sua posição foi posicionada aguarde os Resultados").status(200)/* Expirart em worktime */
+    })
+})
+
 
 app.post('/v1/crash', async (req, res) => {
   console.log(req.body);

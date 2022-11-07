@@ -35,6 +35,7 @@ const stringSession = new StringSession('1AQAOMTQ5LjE1NC4xNzUuNjABu1Y7z7qsOWICbn
                 const valor = 15
                 const autoretirar =2
             })
+            
             //  const resultado = await client.invoke(new Api.messages.GetMessages({channel, id: [43]}))
           //  console.log(resultado.messages[0].message); 
            
