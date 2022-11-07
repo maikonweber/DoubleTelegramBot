@@ -79,15 +79,19 @@ app.use('/v1', async (req, res, next) => {
 
 app.post('/v2/observer', async (req, res) => {
   const token = req.headers.token 
-  const getChannelInformation = getChannelInformation(token)
-  const mq = new MQ('crash')
-  const getUser = await getTokenAndUserInformation(token);
-  const { valor, martingale , channel, sorogale, maxloss, stopwin } = req.body
-  console.log('Start This Shit')
-  mq.setupConnection().then(el => {
-  mq.send(JSON.stringify([ getUser , {
-        martingale, valor, channel, sorogale, maxloss, stopwin
-    }]))
+  const org = await getChannelInformation(token)
+  const mq = new MQ(getChannelInformation.channel)
+  const frase = req.body
+  if(getChannelInformation) {
+    const messageSygnal = {
+        "sygnal" : frase[org.syngalPosition],
+        "protectWhite" : org.protectWhite,
+        "martingale" : org.ignoreMartigale 
+    }
+  }
+  
+  mq.setupConnection().then(async el => {
+  await mq.send(JSON.stringify(messageSygnal))
     return res.json("Sua posição foi posicionada aguarde os Resultados").status(200)/* Expirart em worktime */
     })
 })
