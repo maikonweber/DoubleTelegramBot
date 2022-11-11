@@ -11,13 +11,23 @@ let client = {
 
 
 let pool = new pg.Pool(client);
-
+  
 async function getUser(login, password) {
     const query = `
         SELECT * FROM users WHERE email = '${login}' AND password = '${password}'
     `;
     const result = await pool.query(query);
     return result.rows[0];
+}
+
+async function getChannelInformation(channel) {
+    const query = `SELECT * from channel_config
+                   JOIN channel_name
+                   ON channel_name.channel_id = channel_config.id                
+                   Where id = $1`
+
+    const res = await pool.query(query, [channel])
+    return res.rows[0] 
 }
 
 async function getTokenAndUserInformation(token) {
@@ -29,9 +39,9 @@ async function getTokenAndUserInformation(token) {
                    ORDER BY tu.created_at 
                    DESC LIMIT 1;
                    `
-        const result = await pool.query(query, [token])
-        return result.rows
-    }
+    const result = await pool.query(query, [token])
+    return result.rows
+}
 
 
 async function getAllUsersPayment() {
@@ -46,16 +56,16 @@ async function getAllUsersPayment() {
     console.log(result.rows);
     return result.rows
     //   return result.rows.map(el => {
-        // return {
-        //     "email" : el.email,
-        //     "pay" : el.pay,
-        //     "users_id" : el.users_id,
-        //     "username" : el.username_,
-        //     "password" : el.password_
-        //      }
-   // })
+    // return {
+    //     "email" : el.email,
+    //     "pay" : el.pay,
+    //     "users_id" : el.users_id,
+    //     "username" : el.username_,
+    //     "password" : el.password_
+    //      }
+    // })
 }
- 
+
 
 async function getUserBlaze(users_id) {
     const query = `
@@ -84,16 +94,17 @@ async function getTokenIsValid(token) {
 async function registerToken(token, users_id) {
     const query = `INSERT INTO token_users (token, user_id) VALUES ($1, $2);`
     const result = await pool.query(query, [token, users_id]);
-    return 
+    return
 }
 
 
-module.exports = { 
+module.exports = {
     getUser,
     registerToken,
     getTokenIsValid,
-    getTokenAndUserInformation
-  }
+    getTokenAndUserInformation,
+    getChannelInformation
+}
 
 
 

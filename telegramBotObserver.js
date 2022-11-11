@@ -6,7 +6,7 @@ const axios = require('axios');
 // const {
 //   flushall, setChatIdLoginAndPassword, getChatIDandName
 // } = require('./redisFuction');
-const database = queryGroupChannel(groupId);
+// const database = queryGroupChannel(groupId);
 const tokenAPI = 'xxx-xxx-567-9' 
 
 bot.hears(/✨/g, (ctx) => {
@@ -14,6 +14,8 @@ bot.hears(/✨/g, (ctx) => {
     const body = {
       text
     }
+
+    body.channel = 1
 
     try {
       axios({
@@ -25,7 +27,6 @@ bot.hears(/✨/g, (ctx) => {
         data: body
       }).then(el => {
         console.log(el.data);
-        ctx.reply('Iniciando o Bot');
       })
     } catch (e) {
       return ctx.reply('Ocorreu um erro na sua solicitação a API, Por favor entre em contato conosco, Faço seu Registro e Utilize o Bot');

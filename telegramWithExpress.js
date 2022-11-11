@@ -12,11 +12,14 @@ const {
   getUser,
   registerToken,
   getTokenIsValid,
-  getTokenAndUserInformation
+  getTokenAndUserInformation,
+  getChannelInformation
 } = require('./database');
 
 const Crash = require('./src/Robots/crash');
 const redis = require('ioredis');
+const { message } = require('telegram/client/index.js');
+const { symlink } = require('fs');
 const client = new redis();
 
 require('dotenv').config();
@@ -51,15 +54,11 @@ app.post('/login', async (req, res) => {
 app.use('/v2', async (req, res, next) => {
   const token = req.headers.token
   console.log(token, "token")
-  const result = await getTokenIsValid(token);
-  req.users = result
-  if (result.pay === true) {
-    next();
-  } else if (!result) {
-    res.json('Tente fazer login novamente').status(200);
-  } else if (result.pay === false) {
-    res.json('Ocorreu um erro, você ainda não pagou a mensalidade deste mês').status(404);
+  const tokenAPI = 'xxx-xxx-567-9'
+  if (token == tokenAPI) {
+    next()
   }
+  res.send('Not Found').status(404)
 })
 
 
@@ -78,38 +77,46 @@ app.use('/v1', async (req, res, next) => {
 })
 
 app.post('/v2/observer', async (req, res) => {
-  const token = req.headers.token 
-  const org = await getChannelInformation(token)
-  const mq = new MQ(getChannelInformation.channel)
-  const frase = req.body
-  if(getChannelInformation) {
-    const messageSygnal = {
-        "sygnal" : frase[org.syngalPosition],
-        "protectWhite" : org.protectWhite,
-        "martingale" : org.ignoreMartigale 
-    }
-  }
+  const body = req.body
+  console.log(body)
+  const channel = await getChannelInformation(req.body.channel);
+  console.log(channel);
   
+  const syngal = channel.sygnal_position;
+  const element = req.body.text
+  console.log(element[syngal])
+  const message = {}
+  if (element[syngal] === channel.symbol_red) {
+    message.syngal = 'red'
+  } else if (element[syngal] === channel.symbol_white) {
+    message.sygnal = 'white'
+  } else if (element[syngal] === channel.symbol_black) {
+    message.sygnal = 'black'
+  }
+
+  message.channel.protect_white;
+  
+  const mq = new MQ(channel.channel_name);
   mq.setupConnection().then(async el => {
-  await mq.send(JSON.stringify(messageSygnal))
-    return res.json("Sua posição foi posicionada aguarde os Resultados").status(200)/* Expirart em worktime */
-    })
+     mq.send(JSON.stringify(message))
+     return res.send('Set Sygnal').status(200);
+  });
 })
 
 
 app.post('/v1/crash', async (req, res) => {
   console.log(req.body);
-  const token = req.headers.token 
+  const token = req.headers.token
   const mq = new MQ('crash')
   const getUser = await getTokenAndUserInformation(token);
-  const { valor, martingale , channel, sorogale, maxloss, stopwin } = req.body
+  const { valor, martingale, channel, sorogale, maxloss, stopwin } = req.body
   console.log('Start This Shit')
   mq.setupConnection().then(el => {
-  mq.send(JSON.stringify([ getUser , {
-        martingale, valor, channel, sorogale, maxloss, stopwin
+    mq.send(JSON.stringify([getUser, {
+      martingale, valor, channel, sorogale, maxloss, stopwin
     }]))
     return res.json("Sua posição foi posicionada aguarde os Resultados").status(200)/* Expirart em worktime */
-    })
+  })
 })
 
 
@@ -117,7 +124,7 @@ app.post('/v1/double', async (req, res) => {
   const token = req.headers.token
   const getUser = await getTokenAndUserInformation(token);
   const { martingale, valor, channel, sorogale, maxloss, stopwin } = req.body
-  const queueSetPosition = client.publisher('double' , JSON.stringify({getUser, worktime, martingale, sorogale, valor, channel, maxloss, stopwin}));
+  const queueSetPosition = client.publisher('double', JSON.stringify({ getUser, worktime, martingale, sorogale, valor, channel, maxloss, stopwin }));
   if (queueSetPosition) {
     res.json("Sua posição foi posicionada aguarde os Resultados").status(200)/* Expirart em worktime */
   } else {
