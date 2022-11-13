@@ -14,9 +14,7 @@ bot.hears(/✨/g, (ctx) => {
     const body = {
       text
     }
-
     body.channel = 1
-
     try {
       axios({
         method: 'post',

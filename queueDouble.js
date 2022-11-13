@@ -1,19 +1,26 @@
-const Redis = require('ioredis');
-const client =  new Redis()
+const {
+  setUserIsQueue,
+  getChannelQueue
+} = require('./redisFuction');
 const double = require('./src/Robots/Double.js')
 const MQ = require('./mq');
-
-
 const mq = new MQ('double');
 
 mq.setupConnection().then(el => {  
 mq.recv().consume(mq.queue, async (msg) => {
     if(msg) {
+      console.log(msg)
       let msgString = msg.content.toString();
       msgString = JSON.parse(msgString)
-      // await setUserIsQueue(msgString[0], msgString[1]) - Set this user to Queue for use in the next version for channel
-      const Robots = new Crash(msgString[0].username, msgString[1].password, msgString[1].valor, msgString[1].martingale, msgString[1].sorogale, msgString[1].maxloss, msgString.stopwin)
+
+      let arrayOfQueue = await getChannelQueue(msgString.channel);
+      arrayOfQueue = JSON.parse(arrayOfQueue);
+      if(arrayOfQueue) {
+        arrayOfQueue.push(msgString);
+        await setUserIsQueue(`${msg.msgString}`, arrayOfQueue);
+      }
       
+      //const Robots = new double(msgString[0].username, msgString[1].password, msgString[1].valor, msgString[1].martingale, msgString[1].sorogale, msgString[1].maxloss, msgString.stopwin)
     } 
   }, { noAck : true})
   })

@@ -14,21 +14,36 @@ create table users_blaze (
   users_id integer references users(id)
   );
   
-create table channel_config (
+create table channel_config_double (
   id serial primary key,
   created_at timestamp not null default now(),
   sygnal_position integer not null,
   symbol_red varchar(105) not null,
   symbol_white varchar(105) not null,
   symbol_black varchar(105) not null,
+  white_procted varchar(105) not null,
   detect varchar(105) not null
 );
 
-create table channel_name (
-  channel_id integer references channel_config(id),
+create table channel_name_double (
+  channel_id integer references channel_config_double(id),
   channel_name varchar(105) not null
   );
 
+create table channel_config_crash (
+  id serial primary key,
+  created_at timestamp not null default now(),
+  sygnal_position integer not null,
+  auto_position varchar(105) not null,
+  waiting_number varchar(105) not null,
+  remove varchar(105),
+  detect varchar(105) not null
+);
+
+create table channel_name_crash (
+  channel_id integer references channel_config_crash(id),
+  channel_name varchar(105) not null
+  );
 
 create table payament_value (
   id serial primary key,

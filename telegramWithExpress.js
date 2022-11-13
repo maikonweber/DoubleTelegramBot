@@ -13,7 +13,7 @@ const {
   registerToken,
   getTokenIsValid,
   getTokenAndUserInformation,
-  getChannelInformation
+  getChannelInformationDouble
 } = require('./database');
 
 const Crash = require('./src/Robots/crash');
@@ -76,12 +76,13 @@ app.use('/v1', async (req, res, next) => {
   }
 })
 
+
+
 app.post('/v2/observer', async (req, res) => {
   const body = req.body
   console.log(body)
-  const channel = await getChannelInformation(req.body.channel);
+  const channel = await getChannelInformationDouble(req.body.channel);
   console.log(channel);
-  
   const syngal = channel.sygnal_position;
   const element = req.body.text
   console.log(element[syngal])
@@ -94,13 +95,13 @@ app.post('/v2/observer', async (req, res) => {
     message.sygnal = 'black'
   }
 
-  message.channel.protect_white;
-  
+  message.white_protect = channel.white_procted;
+
   const mq = new MQ(channel.channel_name);
   mq.setupConnection().then(async el => {
-     mq.send(JSON.stringify(message))
-     return res.send('Set Sygnal').status(200);
+    mq.send(JSON.stringify(message))
   });
+
 })
 
 
@@ -123,13 +124,14 @@ app.post('/v1/crash', async (req, res) => {
 app.post('/v1/double', async (req, res) => {
   const token = req.headers.token
   const getUser = await getTokenAndUserInformation(token);
-  const { martingale, valor, channel, sorogale, maxloss, stopwin } = req.body
-  const queueSetPosition = client.publisher('double', JSON.stringify({ getUser, worktime, martingale, sorogale, valor, channel, maxloss, stopwin }));
-  if (queueSetPosition) {
-    res.json("Sua posição foi posicionada aguarde os Resultados").status(200)/* Expirart em worktime */
-  } else {
-    res.json('Sua posição não foi verificada!!!').status(404)
-  }
+  const { valor, martingale ,channel, sorogale, maxloss, stopwin } = req.body
+  const mq = new MQ('double');
+  mq.setupConnection().then(el => {
+    mq.send(JSON.stringify([getUser, {
+      martingale, valor, channel, sorogale, maxloss, stopwin
+    }]))
+    return res.json("Sua posição foi posicionada aguarde os Resultados").status(200)/* Expirart em worktime */
+  })
 })
 
 

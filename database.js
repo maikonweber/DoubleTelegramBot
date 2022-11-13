@@ -20,10 +20,10 @@ async function getUser(login, password) {
     return result.rows[0];
 }
 
-async function getChannelInformation(channel) {
-    const query = `SELECT * from channel_config
-                   JOIN channel_name
-                   ON channel_name.channel_id = channel_config.id                
+async function getChannelInformationDouble(channel) {
+    const query = `SELECT * from channel_config_double
+                   JOIN channel_name_double
+                   ON channel_name_double.channel_id = channel_config_double.id                
                    Where id = $1`
 
     const res = await pool.query(query, [channel])
@@ -103,7 +103,7 @@ module.exports = {
     registerToken,
     getTokenIsValid,
     getTokenAndUserInformation,
-    getChannelInformation
+    getChannelInformationDouble
 }
 
 
