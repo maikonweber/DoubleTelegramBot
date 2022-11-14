@@ -17,11 +17,11 @@ mq.setupConnection().then(async el => {
             console.log(msgString);
             let arrayOfUsersInQueue = await getChannelQueue(msgString.channel_name);
             console.log(arrayOfUsersInQueue)
-            arrayOfUsersInQueue = JSON.parse(arrayOfUsersInQueue)
-           
+            arrayOfUsersInQueue = JSON.parse(arrayOfUsersInQueue)           
             if(arrayOfUsersInQueue) {
             arrayOfUsersInQueue.forEach(element => {    
-                const blaze = new Double(element.getUser, martigale, valor, sorogale, maxloss, stopwin)
+                console.log(element);
+                const blaze = new Double(element.getUser, msgString.aposta, element.martigale, element.valor, element.sorogale, element.maxloss, element.stopwin, msgString.white_protect);
                 blaze.routine().then(el => {
                 })
             });

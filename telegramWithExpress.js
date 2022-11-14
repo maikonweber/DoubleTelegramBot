@@ -114,13 +114,25 @@ app.post('/v2/observer', async (req, res) => {
 app.post('/v1/crash', async (req, res) => {
   console.log(req.body);
   const token = req.headers.token
-  const mq = new MQ('crash')
   const getUser = await getTokenAndUserInformation(token);
   const { valor, martingale, channel, sorogale, maxloss, stopwin } = req.body
-  console.log('Start This Shit')
-  await setUserIsQueue(`${channel}`, JSON.stringify(getUser, martingale, valor, channel, sorogale, maxloss, stopwin))
-  return res.json("Sua posição foi posicionada aguarde os Resultados").status(200)/* Expirart em worktime */
+  let arrayQueue = await getChannelQueue(`${channel}`);
+  arrayQueue = JSON.parse(arrayQueue);
+  console.log(arrayQueue);
 
+  const userQueue = {
+      getUser,
+      valor,
+      martingale,
+      sorogale,
+      maxloss,
+      stopwin
+  }  
+  
+  arrayQueue.push(userQueue)
+  await setUserToQueue(`${channel}`, arrayQueue);
+  console.log(await getChannelQueue(`${channel}`));
+  return res.json("Sua posição foi posicionada aguarde os Resultados").status(200)
 })
 
 
@@ -141,7 +153,7 @@ app.post('/v1/double', async (req, res) => {
       maxloss,
       stopwin
   }  
-  
+
   arrayQueue.push(userQueue)
   await setUserToQueue(`${channel}`, arrayQueue);
   console.log(await getChannelQueue(`${channel}`));

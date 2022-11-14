@@ -10,11 +10,11 @@ puppeteer.use(StealthPlugin());
 
 class Blaze {
     // Initial puppeter
-    constructor(getUsers, sygnal, martingale, sorogales, stopwin, maxloss, protectWhite, valor) {
+    constructor(getUsers, martingale, valor ,sorogales, stopwin, maxloss, protectWhite) {
         this.browser = null;
         this.page = null;
-        this.username = getUsers.username;
-        this.password = getUsers.password;
+        this.username = getUsers.username_;
+        this.password = getUsers.password_;
         this.sygnal = sygnal;
         this.martingale = martingale;
         this.sorogale = stopwin;
