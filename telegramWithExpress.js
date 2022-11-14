@@ -1,6 +1,6 @@
 const express = require('express');
 const {
-  setUserIsQueue
+  startChannelQueue, setUserIsQueue, getChannelQueue,setUserToQueue
 } = require('./redisFuction.js');
 
 const MQ = require('./mq');
@@ -13,15 +13,13 @@ const {
   registerToken,
   getTokenIsValid,
   getTokenAndUserInformation,
-  getChannelInformationDouble
+  getChannelInformationDouble,
+  
 } = require('./database');
 
 const Crash = require('./src/Robots/crash');
 const redis = require('ioredis');
-const { message } = require('telegram/client/index.js');
-const { symlink } = require('fs');
 const client = new redis();
-
 require('dotenv').config();
 
 
@@ -85,23 +83,31 @@ app.post('/v2/observer', async (req, res) => {
   console.log(channel);
   const syngal = channel.sygnal_position;
   const element = req.body.text
-  console.log(element[syngal])
+
+  console.log(element)
+  const element1 = (element[syngal].replace(/✨/, '')).replace(/\n/g, '');
+
+  console.log(element1, 'sygnal')
+
   const message = {}
-  if (element[syngal] === channel.symbol_red) {
-    message.syngal = 'red'
-  } else if (element[syngal] === channel.symbol_white) {
-    message.sygnal = 'white'
-  } else if (element[syngal] === channel.symbol_black) {
-    message.sygnal = 'black'
+  if (element1 === channel.symbol_red) {
+    message.aposta = 'red'
+  } else if (element1 === channel.symbol_white) {
+    message.aposta = 'white'
+  } else if (element1 === channel.symbol_black) {
+    message.aposta = 'black'
   }
-
+  
+  message.channel_name = channel.channel_name;
   message.white_protect = channel.white_procted;
-
+  console.log(message);
   const mq = new MQ(channel.channel_name);
   mq.setupConnection().then(async el => {
-    mq.send(JSON.stringify(message))
+    mq.send(JSON.stringify(message));
+
   });
 
+  res.status(200);
 })
 
 
@@ -112,28 +118,35 @@ app.post('/v1/crash', async (req, res) => {
   const getUser = await getTokenAndUserInformation(token);
   const { valor, martingale, channel, sorogale, maxloss, stopwin } = req.body
   console.log('Start This Shit')
-  mq.setupConnection().then(el => {
-    mq.send(JSON.stringify([getUser, {
-      martingale, valor, channel, sorogale, maxloss, stopwin
-    }]))
-    return res.json("Sua posição foi posicionada aguarde os Resultados").status(200)/* Expirart em worktime */
-  })
+  await setUserIsQueue(`${channel}`, JSON.stringify(getUser, martingale, valor, channel, sorogale, maxloss, stopwin))
+  return res.json("Sua posição foi posicionada aguarde os Resultados").status(200)/* Expirart em worktime */
+
 })
 
 
 app.post('/v1/double', async (req, res) => {
   const token = req.headers.token
   const getUser = await getTokenAndUserInformation(token);
-  const { valor, martingale ,channel, sorogale, maxloss, stopwin } = req.body
-  const mq = new MQ('double');
-  mq.setupConnection().then(el => {
-    mq.send(JSON.stringify([getUser, {
-      martingale, valor, channel, sorogale, maxloss, stopwin
-    }]))
-    return res.json("Sua posição foi posicionada aguarde os Resultados").status(200)/* Expirart em worktime */
-  })
-})
+  const { valor, martingale, channel, sorogale, maxloss, stopwin } = req.body
+  console.log(channel);
+  let arrayQueue = await getChannelQueue(`${channel}`);
+  arrayQueue = JSON.parse(arrayQueue);
+  console.log(arrayQueue);
 
+  const userQueue = {
+      getUser,
+      valor,
+      martingale,
+      sorogale,
+      maxloss,
+      stopwin
+  }  
+  
+  arrayQueue.push(userQueue)
+  await setUserToQueue(`${channel}`, arrayQueue);
+  console.log(await getChannelQueue(`${channel}`));
+  return res.json("Sua posição foi posicionada aguarde os Resultados").status(200)/* Expirart em worktime */
+})
 
 app.listen(port, () => {
   console.log('App Express is Running, ' + port);

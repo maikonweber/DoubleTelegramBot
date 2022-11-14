@@ -12,7 +12,12 @@ async function getChannelQueue(queue) {
   return redis.get(`${queue}`);
 }
 
-async function setUserIsQueue(queue, sygnal) {
+async function startChannelQueue(queue){
+  const array = []
+  return redis.set(`${queue}`, JSON.stringify(array));
+}
+
+async function setUserToQueue(queue, sygnal) {
   return redis.set(`${queue}`, JSON.stringify(sygnal))
 }
 
@@ -55,7 +60,6 @@ async function flushall() {
   });
 }
 
-
 async function getActiveQueue() {
 
 }
@@ -79,5 +83,7 @@ module.exports = {
   getChatIDandName,
   flushall,
   setUserIsQueue,
-  getChannelQueue 
+  getChannelQueue,
+  startChannelQueue,
+  setUserToQueue
 }

@@ -110,11 +110,8 @@ bot.command(['game_crash'], async (ctx, next) => {
 
 bot.command(['game_double'], async (ctx, next) => {
   const from = ctx.message.from
-  
   let users_token = await getChatIDandName(from.id, from.first_name, from.last_name);
-  const splitText = ctx.text.split(" ");
-  console.log(splitText);
-  users_token = JSON.parse(users_token);
+  users_token = JSON.parse(users_token)
   const message = ctx.message.text
   const body = {
     valor : 0,
@@ -124,6 +121,8 @@ bot.command(['game_double'], async (ctx, next) => {
     maxloss : 0,
     stopwin : 0
   }
+
+  
   if (message) {
     const splitMessage = message.split(' ')
     console.log(splitMessage)
@@ -157,12 +156,13 @@ bot.command(['game_double'], async (ctx, next) => {
       headers: {
         "token": users_token.token
       },
+      data: body
     }).then(el => {
-      console.log();
-      ctx.reply(el.data);
+      console.log(el.data);
+      ctx.reply('Iniciando o Bot');
     })
   } catch (e) {
-    return ctx.reply('Ocorreu um erro na sua solicitação a API, Por favor entre em contato conosco');
+    return ctx.reply('Ocorreu um erro na sua solicitação a API, Por favor entre em contato conosco, Faço seu Registro e Utilize o Bot');
   }
 })
 

@@ -1,17 +1,17 @@
 module.exports = {
   apps : [{
-    script: 'telegramBotObserver.js',
+    script: 'telegramBot.js',
     watch: '.'
   }, {
     script: 'telegramWithExpress.js',
     watch: ['.']
   },
   {
-    script: 'queueCrash.js',
+    script: 'consumerReceived.js',
     watch: '.'
   },
   {
-    script: 'queueDouble.js',
+    script: 'telegramBotObserver.js',
     watch: ['.']
   }
 ],

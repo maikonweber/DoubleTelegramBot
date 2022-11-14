@@ -1,5 +1,5 @@
 
-const token = '5189315995:AAF7Ei5ozq6kHLSZTWHS_Xjy0ku-u-cxmfc'
+const token = '5697125034:AAETDW7Nem17erD_c5_xsv6WycyYmqn-urM'
 const { Telegraf } = require('telegraf');
 const bot = new Telegraf(token)
 const axios = require('axios');
@@ -10,6 +10,7 @@ const axios = require('axios');
 const tokenAPI = 'xxx-xxx-567-9' 
 
 bot.hears(/✨/g, (ctx) => {
+    console.log(ctx)
     const text = ctx.message.text.split(' ')
     const body = {
       text
