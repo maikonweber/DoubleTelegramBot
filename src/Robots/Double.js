@@ -1,6 +1,9 @@
 
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const puppeteer = require("puppeteer-extra");
+const {
+    getOnline, setUserOnline
+} = require('../../redisFuction');
 puppeteer.use(StealthPlugin());
 // Moment timezone Sao Paulo
 /*
@@ -10,36 +13,34 @@ puppeteer.use(StealthPlugin());
 
 class Blaze {
     // Initial puppeter
-    constructor(getUsers, martingale, valor ,sorogales, stopwin, maxloss, protectWhite) {
+    constructor(aposta, protectWhite, getUser) {
         this.browser = null;
         this.page = null;
-        this.username = getUsers.username_;
-        this.password = getUsers.password_;
-        this.sygnal = sygnal;
-        this.martingale = martingale;
-        this.sorogale = stopwin;
-        this.maxloss = maxloss;
-        this.sorogale = sorogales
-        this.protectWhite = protectWhite;
+        this.username = getUser.username_;
+        this.password = getUser.password_;
+        this.users_id = getUser.users_id;
+        this.sygnal = aposta;
         this.entryTime;
         this.worked = true;
         this.entryCount = 0;
-        this.controller;
+        this.protectWhite = protectWhite;
         this.bankValue;
-        this.valor = valor;
     }
 
+
     async routine() {
-        this.init().then(
-            async () => {
-                await this.waitingForNextEntry();
-            }
-        )
+        console.log('Routine of Bot');
+        // Get All Information And Update then;
+        // Set State and Execute;
+        console.log(this.username, this.password, this.sygnal, this.entryTime, this.worked, this.entryCount, this.protectWhite, this.bankValue);
+        await getOnline(this.users_id);
+        
     }
+
 
     async sendWorkedTag() {
         console.log('Let try this Shit');
-        if(this.worked){
+        if (this.worked) {
             console.log('Worked');
             this.worked = false;
             const result = await this.Entry()
@@ -77,10 +78,13 @@ class Blaze {
         });
 
         this.page = await this.browser.newPage();
+    }
+
+    async login(username, password) {
         await this.page.goto('https://blaze.com/pt/?modal=auth&tab=login');
         let input = await this.page.$$('input')
-         await this.page.waitForTimeout(500)
-         console.log(input[0], '\n', input[1], "input");
+        await this.page.waitForTimeout(500)
+        console.log(input[0], '\n', input[1], "input");
         try {
             // Send Key to input
             await this.page.waitForTimeout(2000)
@@ -95,39 +99,37 @@ class Blaze {
             let bankValue = await this.page.evaluate(() => {
                 const amout = document.querySelectorAll('.amount')[0].innerText
                 console.log(amout);
-            return amout
+                return amout
             })
             console.log(bankValue)
-
             this.bankValue = bankValue.replace(/R$/, '');
-            // const bank = await (await element.getProperty('TextContent')).jsonValue()
-            // console.log(bank);
-             await this.page.goto('https://blaze.com/en/games/double');
-             await this.page.waitForTimeout(8000);
+            await this.page.waitForTimeout(8000)
+            await this.page.goto('https://blaze.com/en/games/double');
+
         } catch (error) {
             console.log('Erro', error)
         }
     }
 
     async Entry() {
-            let input = await this.page.$$('input');
-            let buttons = await this.page.$$('button');
-            let getElementBlack  = await this.page.$('.black.selected')
-            let getElementWhite= await this.page.$('.white');
-            let getElementRed = await this.page.$('.red');
-            console.log(getElementBlack);
-            console.log(getElementRed);
-            console.log(getElementWhite);
-            // await this.page.waitForTimeout(50)
-            console.log('Entry this Shit');
+        let input = await this.page.$$('input');
+        let buttons = await this.page.$$('button');
+        let getElementBlack = await this.page.$('.black.selected')
+        let getElementWhite = await this.page.$('.white');
+        let getElementRed = await this.page.$('.red');
+        console.log(getElementBlack);
+        console.log(getElementRed);
+        console.log(getElementWhite);
+        // await this.page.waitForTimeout(50)
+        console.log('Entry this Shit');
         try {
-            if(this.sygnal === 'white') {
+            if (this.sygnal === 'white') {
                 await getElementWhite.click();
             } else if (this.sygnal === 'red') {
                 await getElementRed.click();
             } else {
                 await getElementBlack.click();
-            }               
+            }
             await input[0].type(this.valor);
             await buttons[5].click();
             return 'Do it';
@@ -135,15 +137,6 @@ class Blaze {
             console.log('Erro', error)
         }
     }
-
-    // async waitingGame() {
-    //     return new Promise((resolve, reject) => {
-    //         setTimeout(() => {
-    //             console.log('Clear Next Round')
-    //             resolve(this.worked = true);
-    //         }, 19000);
-    //     })
-    // }
 }
 
 module.exports = Blaze;

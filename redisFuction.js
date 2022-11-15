@@ -21,6 +21,11 @@ async function setUserToQueue(queue, sygnal) {
   return redis.set(`${queue}`, JSON.stringify(sygnal))
 }
 
+
+async function setUserOnline(user_id, update) {
+  return redis.set(`${user_id}`, JSON.stringify(sygnal))
+}
+
 async function UnsetUser({ user, martingale, sorogales, list, channel, game }) {
   return redis.del(`${user}`);
 }
@@ -30,6 +35,9 @@ async function setChatIDandName(chatid, first_name, last_name) {
   return redis.set(`${chatid}_${last_name}_${first_name}`)
 }
 
+async function setChatIDandName(chatid, string) {
+  return redis.set(`${token}`, string)
+}
 
 async function getChatIDandName(chatid, first_name, last_name) {
   console.log(`${chatid}_${last_name}_${first_name}`)
@@ -60,9 +68,20 @@ async function flushall() {
   });
 }
 
-async function getActiveQueue() {
-
+async function getOnline(users_id) {
+  return redis.get(`${users_id}`)
 }
+
+
+async function deleteUsersIdQueue(queue, user_id) {
+  const array = await redis.get(`${queue}`)
+  
+  let arr = array.filter(function(item) {
+    return item.getUser.users_id != user_id 
+  })
+
+  return redis.set(`${queue}`, JSON.stringify(arr));
+};
 
 
 
@@ -85,5 +104,9 @@ module.exports = {
   setUserIsQueue,
   getChannelQueue,
   startChannelQueue,
-  setUserToQueue
+  setUserToQueue,
+  setUserOnline,
+  getOnline,
+  setTokenToInformation,
+  deleteUsersIdQueue
 }

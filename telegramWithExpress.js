@@ -1,6 +1,6 @@
 const express = require('express');
 const {
-  startChannelQueue, setUserIsQueue, getChannelQueue,setUserToQueue
+  startChannelQueue, setUserIsQueue, getChannelQueue,setUserToQueue,setUserOnline
 } = require('./redisFuction.js');
 
 const MQ = require('./mq');
@@ -14,7 +14,7 @@ const {
   getTokenIsValid,
   getTokenAndUserInformation,
   getChannelInformationDouble,
-  
+
 } = require('./database');
 
 const Crash = require('./src/Robots/crash');
@@ -132,6 +132,7 @@ app.post('/v1/crash', async (req, res) => {
   arrayQueue.push(userQueue)
   await setUserToQueue(`${channel}`, arrayQueue);
   console.log(await getChannelQueue(`${channel}`));
+  await setUserOnline(`${getUser.users_id}`, userQueue)
   return res.json("Sua posição foi posicionada aguarde os Resultados").status(200)
 })
 
@@ -156,6 +157,7 @@ app.post('/v1/double', async (req, res) => {
 
   arrayQueue.push(userQueue)
   await setUserToQueue(`${channel}`, arrayQueue);
+  await setUserOnline(`${getUser.users_id}`, userQueue)
   console.log(await getChannelQueue(`${channel}`));
   return res.json("Sua posição foi posicionada aguarde os Resultados").status(200)/* Expirart em worktime */
 })

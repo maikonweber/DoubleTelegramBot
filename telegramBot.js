@@ -4,7 +4,8 @@ const { Telegraf } = require('telegraf');
 const bot = new Telegraf(token)
 const axios = require('axios');
 const {
-  flushall, setChatIdLoginAndPassword, getChatIDandName
+  flushall, setChatIdLoginAndPassword, getChatIDandName,
+  setTokenToInformation
 } = require('./redisFuction');
 
 const helpMessage = `
@@ -41,7 +42,8 @@ bot.command(['login'], async (ctx, next) => {
       await setChatIdLoginAndPassword(from.id, from.first_name, from.last_name, {
         "token": el.data.token
       })
-      ctx.state.token = el.data.token
+      await setTokenToInformation(`${el.data.token}`, JSON.stringify({ id : from.id , from : from.first_name }))
+      ctx.state.token = el.data.token;
       ctx.reply(el.data.message);
     })
     return next(ctx);

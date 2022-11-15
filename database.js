@@ -31,7 +31,7 @@ async function getChannelInformationDouble(channel) {
 }
 
 async function getTokenAndUserInformation(token) {
-    const query = `SELECT password_, username_ 
+    const query = `SELECT password_, username_, users_id 
                    FROM token_users tu 
                    JOIN users_blaze ub 
                    ON tu.user_id = ub.users_id 
