@@ -43,6 +43,13 @@ async function getTokenAndUserInformation(token) {
     return result.rows
 }
 
+async function getToken(user_id) {
+    const query = `Select token from token_users WHERE user_id = $1 Order by created_at DESC limit 1;`
+    const result = await pool.query(query, [user_id])
+    console.log(result);
+    return result.rows[0]
+}
+
 
 async function getAllUsersPayment() {
     const query = `SELECT email, users_id, pay, users_id, username_, password_ from users 
@@ -103,7 +110,8 @@ module.exports = {
     registerToken,
     getTokenIsValid,
     getTokenAndUserInformation,
-    getChannelInformationDouble
+    getChannelInformationDouble,
+    getToken
 }
 
 

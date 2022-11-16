@@ -4,15 +4,14 @@ module.exports = {
     watch: '.'
   }, {
     script: 'telegramWithExpress.js',
-    watch: ['.']
   },
   {
     script: 'consumerReceived.js',
-    watch: '.'
+    
   },
   {
     script: 'telegramBotObserver.js',
-    watch: ['.']
+  
   }
 ],
 

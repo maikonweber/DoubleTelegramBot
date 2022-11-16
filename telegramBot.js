@@ -168,7 +168,6 @@ bot.command(['game_double'], async (ctx, next) => {
   }
 })
 
-
 process.once('SIGINT', () => {
   flushall().then()
   return bot.stop('SIGINT')
@@ -179,4 +178,14 @@ process.once('SIGTERM', () => {
   return bot.stop('SIGTERM')
 });
 
+ async function sendNotificationMessage(user_id, string) {
+   return bot.telegram.sendMessage(user_id, string);
+  }
+
+
+
 bot.launch()
+
+module.exports = {
+  sendNotificationMessage
+}

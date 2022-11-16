@@ -23,7 +23,7 @@ mq.setupConnection().then(async el => {
             if(arrayOfUsersInQueue) {
             arrayOfUsersInQueue.forEach(async element => {    
                 console.log(element);
-                const blaze = new Double(msgString.aposta, msgString.white_procted, element.getUser);
+                const blaze = new Double(msgString.aposta, false, element);
                 blaze.routine().then();
             });
             } else {

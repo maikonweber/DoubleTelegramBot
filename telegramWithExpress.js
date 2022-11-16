@@ -86,7 +86,6 @@ app.post('/v2/observer', async (req, res) => {
 
   console.log(element)
   const element1 = (element[syngal].replace(/✨/, '')).replace(/\n/g, '');
-
   console.log(element1, 'sygnal')
 
   const message = {}
