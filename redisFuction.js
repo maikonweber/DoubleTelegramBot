@@ -39,7 +39,7 @@ async function setTokenToInformation(token, string) {
   return redis.set(`${token}`, string)
 }
 
-async function getSenderInformationToken(token, string) {
+async function getSenderInformationToken(token) {
   return redis.get(`${token}`);
 }
 
@@ -82,11 +82,24 @@ async function deleteUsersIdQueue(queue, user_id) {
   const array = await redis.get(`${queue}`)
   
   let arr = array.filter(function(item) {
+    return item['getUser'][0].users_id != user_id 
+  })
+  console.log(arr)
+  return redis.set(`${queue}`, JSON.stringify(arr));
+};
+
+async function deleteUsersIdQueue(queue, user_id) {
+  let  array = await redis.get(`${queue}`)
+  array = JSON.parse(array);
+  let arr = array.filter(function(item) {
     return item.getUser.users_id != user_id 
   })
 
+  console.log(arr);
+
   return redis.set(`${queue}`, JSON.stringify(arr));
 };
+
 
 
 

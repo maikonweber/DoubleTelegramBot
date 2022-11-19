@@ -2,16 +2,72 @@
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const puppeteer = require("puppeteer-extra");
 const {
-    getOnline, setUserOnline, getSenderInformationToken
+    getOnline, setUserOnline, getSenderInformationToken, getChannelQueue, deleteUsersIdQueue, setUserToQueue
 } = require('../../redisFuction');
+
+
+// async resultPrint(result) {
+//     const caseObjectString = {
+//         'red': () => {
+//             return this.valor * 2;
+//         },
+//         'black': () => {
+//             return this.valor * 2;
+//         },
+//         'white': () => {
+//             return this.valor * 14;
+//         }
+//     }
+//     return caseObjectString(result);
+// }
+
+
+// async sendNotifcation(users_id, sendTag) {
+//     const token = await getToken(users_id);
+//     let objSender = await getSenderInformationToken(token);
+//     objSender = JSON.parse(objSender);
+//     console.log(objSender, token, "");
+//     const sendString = {
+//         "bet": () => {
+//             return `Uma Aposta foi feita no valor ${this.valor} , Na aposta ${this.aposta}, 
+//              Com Proteção no Branco ${this.protectWhite}
+//             `},
+//         "win": (result) => {
+//             return `Vocẽ apostou: ${this.valor}, no ${this.aposta}, com Proteção White ${this.protectWhite}
+//                 Resultado : ${this.lastResult}, 
+//                 ${this.resultPrint(this.lastResult)}`
+//         },
+//         "loss": (result) => {
+//             return `Vocẽ apostou: ${this.valor}, no ${this.aposta}, com Proteção White ${this.protectWhite}
+//                 Resultado : ${this.lastResult}, 
+//                 ${this.resultPrint(this.lastResult)} `
+//         }
+//     }
+
+//     console.log(objSender.id, sendString[sendTag])
+// }
+
+
+const caseObject = {
+    "Loss": async () => {
+        this.getUser['stoploss'] = this.getUser['stoploss'] - 1;
+        console.log('Usuário', user_id, 'Teve uma partida perdida')
+        await setUserOnline(user_id, this.getUser);
+    },
+    'Win': async () => {
+        if (this.sorogale != 0) {
+            this.getUser['valor'] = this.getUser['sorosgale'] != 0 ? this.sorogale * this.winpot / 100 : this.user_id['valor'];
+        }
+        console.log('Usuário', user_id, 'Teve uma partida ganha')
+        await setUserOnline(user_id, this.getUser);
+
+    }
+};
 
 const {
     getToken
 } = require('../../database');
-
-const {
-    sendNotificationMessage
-} = require('../../telegramBot');
+const { sanitizeParseMode } = require('telegram/Utils');
 
 puppeteer.use(StealthPlugin());
 // Moment timezone Sao Paulo
@@ -22,7 +78,8 @@ puppeteer.use(StealthPlugin());
 
 class Blaze {
     // Initial puppeter
-    constructor(aposta, protectWhite, getUser) {
+    constructor(aposta, protectWhite, getUser, channel) {
+        this.channel = channel
         this.browser = null;
         this.page = null;
         this.entryMoment = true;
@@ -33,136 +90,120 @@ class Blaze {
         this.protectWhite = protectWhite;
         this.bankValue;
         this.aposta = aposta
-        this.martigale;
-        this.sorogale;
-        this.winstop;
-        this.user;
+        this.entryMoment;
+        this.result;
         this.win = 'waiting';
         this.stoploss;
+        this.winpot = 0
+        this.arrayOutline = [];
+        this.timeCountComprove = 0
     }
 
 
     async routine() {
-        console.log('Routine of Bot');
-
-        // Get All Information And Update then;
-        // Set State and Execute;
-        console.log(this.aposta, this.getUser)
-        const user = await getOnline(this.getUser.users_id);
+        console.log('-------------------------------------------------------------------------------')
+        console.log('-------------------------------------------------------------------------------')
+        console.log(`Start Client ${this.getUser['getUser'][0].users_id} for Routine of Bot`);
+        console.log(this.aposta, this.getUser['getUser'][0])
+        console.log(this.getUser)
+        console.log('-------------------------------------------------------------------------------')
+        console.log('-------------------------------------------------------------------------------')
+        console.log('-------------------------------------------------------------------------------')
+        console.log('-------------------------------------------------------------------------------')
+        console.log('Verificando as estatisticas')
+        this.entryCount = this.getUser['martingale'] === 0 ? '1' : this.getUser['martingale'];
         await this.init().then(async (el) => {
             const result = await this.login(this.getUser['getUser'][0].username_, this.getUser['getUser'][0].password_);
-            console.log('Initialize a routine!!!')
+            console.log(result, 'Login Efetuado');
             if (result) {
-                if(this.Entry) {    
-                console.log('Waiting next Entry');
+                console.log( `Waiting next Entry ${this.getUser['getUser'][0]}`);
+                console.log('-----------------------------------');
+                console.log(`Executando', ${this.entryCount}, ${this.getUser['bankValue'] - this.getUser['valor']} ` )
                 await this.waitingForNextEntry()
-                } else {
-                console.log('No Have Bank to Play');
-                }
+            } else {
+                console.log(`Usuário não possue ${this.getUser['getUser'][0]} Saldo removendo ele da Fila`);
+                await this.browser.close();
             }
         })
     }
 
-    async updateUsersId(user_id, string) {
-        console.log(this.user);
-        const caseObject = {
-            "Loss": async () => {
-                this.user = this.stoploss - 1;
-                console.log('Usuário', user_id, 'Teve uma partida perdida')
-                await setUserOnline(user_id, this.getUser);
-            },
-            'Win': async () => {
-                if (this.sorogale != 0) {
-                    this.user_id.valor = this.sorogale != 0? this.sorogale * winpot / 100 :  this.user_id.valor;
-                }
-                console.log('Usuário', user_id, 'Teve uma partida ganha')
-                await setUserOnline(user_id, this.getUser);
-            }
-        }
-
-
-        return await caseObject[string]()
+    async sendWorkedTag(interval) {
+       
     }
-
-
-    async sendWorkedTag() {
-        console.log(`Entry in', ${this.aposta}, ${this.protectWhite}`, this.getUser['valor']);
-        const result = await this.Entry()
-        if (result) {
-            console.log('You Win This Round');
-            await this.updateUsersId(this.getUser.users_id, 'Win');
-            await this.sendNotifcation(this.getUser.users_id, 'win')
-            this.page.waitForTimeout(2000);
-            this.browser.close()
-        } else {
-            console.log('You lose This Round')
-            this.updateUsersId(this.getUser.users_id, 'Loss');
-            await this.sendNotifcation(this.getUser.users_id, 'loss')
-        }
-    }
-
-    async resultPrint(result) {
-        const caseObjectString = {
-            'red': () => {
-                return this.valor * 2;
-            },
-            'black': () => {
-                return this.valor * 2;
-            },
-            'white': () => {
-                return this.valor * 14;
-            }
-        }
-
-        return caseObjectString(result);
-    }
-
-    async sendNotifcation(users_id, sendTag) {
-        const token = await getToken(users_id);
-        let objSender = await getSenderInformationToken(token)
-        objSender = JSON.parse(objSender);
-        console.log(objSender, token);
-
-        const sendString = {
-            "bet": () => {
-                return `Uma Aposta foi feita no valor ${this.valor} , Na aposta ${this.aposta}, 
-                 Com Proteção no Branco ${this.protectWhite}
-                `},
-            "win": (result) => {
-                return `Vocẽ apostou: ${this.valor}, no ${this.aposta}, com Proteção White ${this.protectWhite}
-                    Resultado : ${this.lastResult}, 
-                    ${this.resultPrint(this.lastResult)}`
-            },
-            "loss": (result) => {
-                return `Vocẽ apostou: ${this.valor}, no ${this.aposta}, com Proteção White ${this.protectWhite}
-                    Resultado : ${this.lastResult}, 
-                    ${this.resultPrint(this.lastResult)} `
-            }
-        }
-        return await sendNotificationMessage(objSender.id, sendString[sendTag])
-    }
-
 
     async waitingForNextEntry() {
-        if (this.entryCount > 0) {
-            this.entryCount = this.getUser['martingale'] === 0 ? '1' : this.getUser['martingale'];
-            const interval = setInterval(async () => {
-                const element = await this.page.evaluate(() => {
-                    return document.querySelectorAll('.progress-bar')[0].innerText;
+        const interval = setInterval(async () => {
+            const element = await this.page.evaluate(() => {
+                return document.querySelectorAll('.progress-bar')[0].innerText;
+            })
+
+            console.log('thick entry ', this.entryCount)
+            let getResult = false;
+            console.log('Desejo que array', this.arrayOutline, 'esteja vazio');
+            let split = element.split(' ');
+            split = split[2].split(':');
+            this.entryTime = split[0] > 0 ? true : false;
+            console.log('O Painel está aguardando terminar a rodada');
+            if(!this.entryTime) {
+                console.log('Roleta está girando');
+            }
+
+            if (this.entryTime && this.entryMoment && this.entryCount >= 1) {
+                console.log('È inicio da rodada')
+                console.log('Marcando o primeira oportunidade');
+                this.entryMoment = false
+                console.log(`Entry in', ${this.aposta}, ${this.protectWhite}`, this.getUser['valor']);
+                // await this.Entry();
+                const p = new Promise(async (resolve, reject) => {
+                    setTimeout(async () => {
+                        console.log('thick', this.arrayOutline);
+                        const WL = await this.comproveWin();
+                        console.log(WL);
+                        if (WL) {
+                            console.log("Win");
+                            const caseWinNumber = {
+                                'white' : () => {
+                                    return 14
+                                }, 
+                                'red' : () => {
+                                    return 2
+                                }, 
+                                'black' : () => {
+                                    return 2
+                                }
+                            }
+
+                            //this.getUser['valor'] = this.winpot + this.getUser['valor'];
+                            this.getUser['maxloss'] -= 1;
+                            this.getUser['stopwin'] -= 1;                  
+                            await deleteUsersIdQueue('teste', this.getUser['getUser'][0].users_id);
+                            let arrayOfUsersInQueue = await getChannelQueue('teste');
+                            arrayOfUsersInQueue = JSON.parse(arrayOfUsersInQueue);
+                            arrayOfUsersInQueue.push(this.getUser);
+                            await setUserToQueue('teste', arrayOfUsersInQueue);
+                            this.timeCountComprove = this.timeCountComprove + 1;
+                            clearInterval(interval);  
+                            setTimeout(async () => {
+                                await this.browser.close()
+                            }, 15000)
+                           
+                        } else {
+                            await this.getLastResult();
+                            console.log("Loss");
+                            this.timeCount -= 1;
+                            this.timeCountComprove = this.timeCountComprove + 1;
+                            this.entryMoment = true
+
+                            console.log('Jogando Novamente');
+                        }
+                        resolve();
+                    }, 28000)
                 })
-                console.log(this.entryCount);
-                let split = element.split(' ');
-                split = split[2].split(':');
-                this.entryTime = split[0] > 0 ? true : false;
-                console.log(this.entryTime);
-                if (this.entryTime) {
-                    if (this.entryCount >= 1 && this.entryMoment) {
-                        this.entryMoment = false
-                        await this.sendWorkedTag()
-                    }
-                }
-            }, 5000);
-        }
+
+               await p
+            }
+        }, 5000);
+
     }
 
     async init() {
@@ -185,11 +226,11 @@ class Blaze {
 
         this.page = await this.browser.newPage();
         await this.page.setDefaultNavigationTimeout(300000)
-    }   
+    }
 
     async login(username, password) {
-        const offset = {x: 213 + 5, y: 11 + 5};
-        await this.page.goto('https://blaze.com/pt/?modal=auth&tab=login', { waitUtil : 'networkidle0'});
+        const offset = { x: 213 + 5, y: 11 + 5 };
+        await this.page.goto('https://blaze.com/pt/?modal=auth&tab=login', { waitUtil: 'networkidle0' });
         await this.page.mouse.click(1 + offset.x, 2 + offset.y);
         let input = await this.page.$$('input')
         await this.page.waitForTimeout(500)
@@ -204,20 +245,26 @@ class Blaze {
             const nesw = await buttons.$('button')
             await nesw.click()
             await this.page.waitForTimeout(5000)
+
             let bankValue = await this.page.evaluate(() => {
                 const amout = document.querySelectorAll('.amount')[0].innerText
                 console.log(amout);
                 return amout
             })
+
             console.log(bankValue)
+
             this.bankValue = bankValue.match(/([0-9][0-9].[0-9]*)\w/g);
             this.getUser['bankValue'] = this.bankValue[0]
             console.log(this.getUser, 'newGetUser')
+
             await this.page.waitForTimeout(8000)
             await this.page.goto('https://blaze.com/en/games/double');
+
             if (this.getUser['bankValue'] > this.getUser['valor']) {
                 return true
             }
+
         } catch (error) {
             console.log('Erro', error)
         }
@@ -259,39 +306,41 @@ class Blaze {
                 await buttons[7].click();
             }
 
-            this.entryCount - 1;
-            if(this.entryCount >= 1) {
-                this.entryMoment = true
-            }
+            return true;
 
-            await this.sendNotifcation(this.getUser.users_id, 'bet');
-       
-            
-            return await this.getLastResult()
         } catch (e) {
             console.log(e);
         }
     }
 
-    async getLastResult() {
-        this.lastResult = await this.page.evaluate((el => {
-            return document.querySelectorAll('.entry')[0].innerText;
-        }))
-        console.log(this.lastResult);
-        
+    async comproveWin() {
+        await this.getLastResult();
+
         const caseColor = {
-            'red': async (result) => {
+            'red': (result) => {
                 return ['1', '2', '3', '4', '5', '6', '7'].includes(result);
             },
-            'black': async (result) => {
+            'white': (result) => {
                 return [''].includes(result);
             },
-            'white': async (result) => {
+            'black': (result) => {
                 return ['8', '9', '10', '11', '12', '13', '14'].includes(result);
             }
         }
-        console.log(caseColor[`${this.aposta}`](this.lastResult));
-        return await caseColor[`${this.aposta}`](this.lastResult);
+
+        console.log(this.arrayOutline[this.timeCountComprove], 'lastResult');
+        console.log(caseColor[`${this.aposta}`](this.arrayOutline[this.timeCountComprove]), 'Resultado');
+        return await caseColor[`${this.aposta}`](this.arrayOutline[this.timeCountComprove]);
+    }
+
+    async getLastResult() {
+     
+        const result = await this.page.evaluate((el => {
+            return document.querySelectorAll('.entry')[0].innerText;
+        }));
+    
+       return this.arrayOutline.push(result)
     }
 }
+
 module.exports = Blaze;

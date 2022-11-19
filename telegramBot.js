@@ -1,5 +1,5 @@
 
-const token = '5189315995:AAF7Ei5ozq6kHLSZTWHS_Xjy0ku-u-cxmfc'
+const token = '5189315995:AAH08sFdFug0515I3RvBiYHVQo9aK4SomiY'
 const { Telegraf } = require('telegraf');
 const bot = new Telegraf(token)
 const axios = require('axios');
@@ -58,12 +58,12 @@ bot.command(['game_crash'], async (ctx, next) => {
   users_token = JSON.parse(users_token)
   const message = ctx.message.text
   const body = {
-    valor : 0,
+    valor : 1.11,
     martingale : 0,
-    channel : '',
+    channel : 'teste',
     sorogale : 0,
-    maxloss : 0,
-    stopwin : 0
+    maxloss : 9999,
+    stopwin : 9999
   }
 
   
@@ -116,14 +116,13 @@ bot.command(['game_double'], async (ctx, next) => {
   users_token = JSON.parse(users_token)
   const message = ctx.message.text
   const body = {
-    valor : 0,
+    valor : 1.11,
     martingale : 0,
-    channel : '',
+    channel : 'teste',
     sorogale : 0,
-    maxloss : 0,
-    stopwin : 0
+    maxloss : 9999,
+    stopwin : 9999
   }
-
   
   if (message) {
     const splitMessage = message.split(' ')
@@ -168,24 +167,6 @@ bot.command(['game_double'], async (ctx, next) => {
   }
 })
 
-process.once('SIGINT', () => {
-  flushall().then()
-  return bot.stop('SIGINT')
-
-});
-process.once('SIGTERM', () => {
-  flushall().then()
-  return bot.stop('SIGTERM')
-});
-
- async function sendNotificationMessage(user_id, string) {
-   return bot.telegram.sendMessage(user_id, string);
-  }
-
-
 
 bot.launch()
 
-module.exports = {
-  sendNotificationMessage
-}
