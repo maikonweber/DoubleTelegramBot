@@ -67,7 +67,7 @@ const caseObject = {
 const {
     getToken
 } = require('../../database');
-const { sanitizeParseMode } = require('telegram/Utils');
+const { DOUBLE } = require('sequelize');
 
 puppeteer.use(StealthPlugin());
 // Moment timezone Sao Paulo
@@ -78,21 +78,21 @@ puppeteer.use(StealthPlugin());
 
 class Blaze {
     // Initial puppeter
-    constructor(aposta, protectWhite, getUser, channel) {
+    constructor(aposta, protectWhite, getUser, channel, game) {
+        this.game = game
         this.channel = channel
         this.browser = null;
+        this.result = true
         this.page = null;
-        this.entryMoment = true;
+        this.entryMoment = 'betting';
         this.getUser = getUser;
         this.entryTime;
         this.worked = true;
-        this.entryCount = 1;
+        this.entryCount;
         this.protectWhite = protectWhite;
         this.bankValue;
         this.aposta = aposta
-        this.entryMoment;
-        this.result;
-        this.win = 'waiting';
+        this.result = false
         this.stoploss;
         this.winpot = 0
         this.arrayOutline = [];
@@ -104,21 +104,25 @@ class Blaze {
         console.log('-------------------------------------------------------------------------------')
         console.log('-------------------------------------------------------------------------------')
         console.log(`Start Client ${this.getUser['getUser'][0].users_id} for Routine of Bot`);
-        console.log(this.aposta, this.getUser['getUser'][0])
-        console.log(this.getUser)
+        console.log(this.getUser['getUser'])
         console.log('-------------------------------------------------------------------------------')
         console.log('-------------------------------------------------------------------------------')
         console.log('-------------------------------------------------------------------------------')
         console.log('-------------------------------------------------------------------------------')
         console.log('Verificando as estatisticas')
+
         this.entryCount = this.getUser['martingale'] === 0 ? '1' : this.getUser['martingale'];
+        console.log(this.entryCount, 'Numeros de Jogadas', Object.values(this.getUser));
+
+
         await this.init().then(async (el) => {
             const result = await this.login(this.getUser['getUser'][0].username_, this.getUser['getUser'][0].password_);
             console.log(result, 'Login Efetuado');
+
             if (result) {
-                console.log( `Waiting next Entry ${this.getUser['getUser'][0]}`);
+                console.log(`Waiting next Entry ${this.getUser['getUser'][0]}`);
                 console.log('-----------------------------------');
-                console.log(`Executando', ${this.entryCount}, ${this.getUser['bankValue'] - this.getUser['valor']} ` )
+                console.log(`Executando', ${this.entryCount}, ${this.getUser['bankValue'] - this.getUser['valor']} `)
                 await this.waitingForNextEntry()
             } else {
                 console.log(`Usuário não possue ${this.getUser['getUser'][0]} Saldo removendo ele da Fila`);
@@ -127,84 +131,56 @@ class Blaze {
         })
     }
 
-    async sendWorkedTag(interval) {
-       
-    }
-
     async waitingForNextEntry() {
-        const interval = setInterval(async () => {
-            const element = await this.page.evaluate(() => {
-                return document.querySelectorAll('.progress-bar')[0].innerText;
-            })
+        const waitingObjectCase = {
+            'Double': () => {
+                console.log('Iniciando o Observador de Resultado');
+                const PrimeiraRodada = Math.round(Date.now().valueOf() / 1000)
+                let firstResult = true;
+                const interval = setInterval(async () => {
+                    const timer = Math.round(Date.now().valueOf() / 1000) - PrimeiraRodada;
+                    const element = await this.page.evaluate(() => {
+                        const element = document.querySelectorAll('.time-left > b')[0]?.innerText;
+                        return element ? element : null;
+                    })
 
-            console.log('thick entry ', this.entryCount)
-            let getResult = false;
-            console.log('Desejo que array', this.arrayOutline, 'esteja vazio');
-            let split = element.split(' ');
-            split = split[2].split(':');
-            this.entryTime = split[0] > 0 ? true : false;
-            console.log('O Painel está aguardando terminar a rodada');
-            if(!this.entryTime) {
-                console.log('Roleta está girando');
-            }
+                    console.log(element);
 
-            if (this.entryTime && this.entryMoment && this.entryCount >= 1) {
-                console.log('È inicio da rodada')
-                console.log('Marcando o primeira oportunidade');
-                this.entryMoment = false
-                console.log(`Entry in', ${this.aposta}, ${this.protectWhite}`, this.getUser['valor']);
-                // await this.Entry();
-                const p = new Promise(async (resolve, reject) => {
-                    setTimeout(async () => {
-                        console.log('thick', this.arrayOutline);
-                        const WL = await this.comproveWin();
-                        console.log(WL);
-                        if (WL) {
-                            console.log("Win");
-                            const caseWinNumber = {
-                                'white' : () => {
-                                    return 14
-                                }, 
-                                'red' : () => {
-                                    return 2
-                                }, 
-                                'black' : () => {
-                                    return 2
-                                }
-                            }
-
-                            //this.getUser['valor'] = this.winpot + this.getUser['valor'];
-                            this.getUser['maxloss'] -= 1;
-                            this.getUser['stopwin'] -= 1;                  
-                            await deleteUsersIdQueue('teste', this.getUser['getUser'][0].users_id);
-                            let arrayOfUsersInQueue = await getChannelQueue('teste');
-                            arrayOfUsersInQueue = JSON.parse(arrayOfUsersInQueue);
-                            arrayOfUsersInQueue.push(this.getUser);
-                            await setUserToQueue('teste', arrayOfUsersInQueue);
-                            this.timeCountComprove = this.timeCountComprove + 1;
-                            clearInterval(interval);  
-                            setTimeout(async () => {
-                                await this.browser.close()
-                            }, 15000)
-                           
-                        } else {
-                            await this.getLastResult();
-                            console.log("Loss");
-                            this.timeCount -= 1;
-                            this.timeCountComprove = this.timeCountComprove + 1;
-                            this.entryMoment = true
-
-                            console.log('Jogando Novamente');
+                    if (element && firstResult) {
+                        console.log(element);
+                        this.arrayOutline.push(element.replace(/!/g, ''))
+                        console.log(this.arrayOutline);
+                        firstResult = false
+                        const win = this.comproveWin()
+                        if(win && this.entryCount > 0) {
+                            
                         }
-                        resolve();
-                    }, 28000)
-                })
+                    }
 
-               await p
+                    const elementForPlay = await this.page.evaluate(() => {
+                        let element = 0;
+                        element = document.querySelectorAll('.time-left')[0]?.innerText.match(/Rolling In/g)
+                        return element
+                    })
+
+                    this.playTime = elementForPlay != null ? elementForPlay[0] : 'null'
+                    if (this.playTime === 'Rolling In' && this.entryMoment) {
+                        console.log('Jogando');
+                        
+                        this.entryMoment = false
+                        firstResult = true;
+                        return //this.Entry
+                    }
+                }, 1000)
+            },
+            'Crash' : () => {
+
             }
-        }, 5000);
-
+        }
+        return waitingObjectCase[this.game]()
     }
+
+
 
     async init() {
         this.browser = await puppeteer.launch({
@@ -314,8 +290,7 @@ class Blaze {
     }
 
     async comproveWin() {
-        await this.getLastResult();
-
+        // await this.getLastResult();
         const caseColor = {
             'red': (result) => {
                 return ['1', '2', '3', '4', '5', '6', '7'].includes(result);
@@ -327,19 +302,19 @@ class Blaze {
                 return ['8', '9', '10', '11', '12', '13', '14'].includes(result);
             }
         }
+        const arrayPosition = this.timeCountComprove;
 
-        console.log(this.arrayOutline[this.timeCountComprove], 'lastResult');
-        console.log(caseColor[`${this.aposta}`](this.arrayOutline[this.timeCountComprove]), 'Resultado');
-        return await caseColor[`${this.aposta}`](this.arrayOutline[this.timeCountComprove]);
+        return caseColor[`${this.aposta}`](this.arrayOutline[arrayPosition])        
     }
-
     async getLastResult() {
-     
+        console.log('Pegando o resultado')
         const result = await this.page.evaluate((el => {
             return document.querySelectorAll('.entry')[0].innerText;
         }));
-    
-       return this.arrayOutline.push(result)
+        let date = Date.now().valueOf()
+        console.log(date, result);
+        this.arrayOutline.push(result)
+        return this.arrayOutline;
     }
 }
 
