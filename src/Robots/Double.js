@@ -117,10 +117,9 @@ class Blaze {
 
 
         await this.init().then(async (el) => {
-            const result = await this.login(this.getUser['getUser'][0].username_, this.getUser['getUser'][0].password_);
-            console.log(result, 'Login Efetuado');
-
-            if (result) {
+            await this.login(this.getUser['getUser'][0].username_, this.getUser['getUser'][0].password_);
+            
+            
                 console.log(`Waiting next Entry ${this.getUser['getUser'][0]}`);
                 console.log('-----------------------------------');
                 console.log(`Executando', ${this.entryCount}, ${this.getUser['bankValue'] - this.getUser['valor']} `)
@@ -131,18 +130,14 @@ class Blaze {
                         await this.page.goto('https://blaze.com/en/games/double');
                     },
                     'Crash': async () => {
-                        await this.page.goto('https://blaze.com/en/games/crash', { waitUtil: 'networkindle' });
+                        await this.page.goto('https://blaze.com/en/games/crash');
                         await this.page.waitForTimeout(8000)
                     }
                 }
 
                 await caseGame[this.game]()
-
                 await this.waitingForNextEntry()
-            } else {
-                console.log(`Usuário não possue ${this.getUser['getUser'][0]} Saldo removendo ele da Fila`);
-                await this.browser.close();
-            }
+            
         })
     }
 
@@ -189,7 +184,7 @@ class Blaze {
                 }, 1000)
             },
             'Crash': async () => {
-                await this.page.waitForTimeout(1000);
+                await this.page.waitForTimeout(20000);
                 console.log('Aguardando o Proximo Crash');
                 let element = await this.page.evaluate(() => {
                     return document.querySelectorAll('.entries')[0].querySelector('span').innerText
@@ -200,12 +195,23 @@ class Blaze {
                         return document.querySelectorAll('.entries')[0].querySelector('span').innerText
                     })
                     console.log(newElement)
+                    const p = new Promise((resolve, reject) => {
+                        setTimeout(() => {
+                            resolve(this.entryMoment = 'playing')
+                        }, 4000)
+                    })
+
+                    if(this.entryMoment) {
+                        this.Entry();
+                    }
 
                     if (element === !newElement) {
                         console.log('Nova Entrada');
                         this.arrayOutline.push(newElement); 
                         element = newElement
                         console.log(this.arrayOutline);
+                        this.entryMoment = 'betting';
+                        await p;
                     }  
                 }, 1000);
             }
@@ -253,7 +259,7 @@ class Blaze {
             const buttons = await this.page.$('.input-footer')
             const nesw = await buttons.$('button')
             await nesw.click()
-            await this.page.waitForTimeout(5000)
+            await this.page.waitForTimeout(8000)
 
             let bankValue = await this.page.evaluate(() => {
                 const amout = document.querySelectorAll('.amount')[0].innerText
@@ -270,8 +276,6 @@ class Blaze {
             if (this.getUser['bankValue'] > this.getUser['valor']) {
                 return true
             }
-
-            await this.page.waitForTimeout(8000)
         } catch (error) {
             console.log('Erro', error)
         }

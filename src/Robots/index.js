@@ -8,7 +8,7 @@ const getUsers = [{
 }]
 
 const martigale = 4;
-const sorogale = 20;
+const sorogale = 4;
 const winloss = 5;
 const stoploss = 5;
 const valor = 1.11;
