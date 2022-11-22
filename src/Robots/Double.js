@@ -101,6 +101,7 @@ class Blaze {
 
 
     async routine() {
+        console.log(this.game);
         console.log('-------------------------------------------------------------------------------')
         console.log('-------------------------------------------------------------------------------')
         console.log(`Start Client ${this.getUser['getUser'][0].users_id} for Routine of Bot`);
@@ -123,6 +124,20 @@ class Blaze {
                 console.log(`Waiting next Entry ${this.getUser['getUser'][0]}`);
                 console.log('-----------------------------------');
                 console.log(`Executando', ${this.entryCount}, ${this.getUser['bankValue'] - this.getUser['valor']} `)
+
+
+                const caseGame = {
+                    'Double': async () => {
+                        await this.page.goto('https://blaze.com/en/games/double');
+                    },
+                    'Crash': async () => {
+                        await this.page.goto('https://blaze.com/en/games/crash', { waitUtil: 'networkindle' });
+                        await this.page.waitForTimeout(8000)
+                    }
+                }
+
+                await caseGame[this.game]()
+
                 await this.waitingForNextEntry()
             } else {
                 console.log(`Usuário não possue ${this.getUser['getUser'][0]} Saldo removendo ele da Fila`);
@@ -152,8 +167,8 @@ class Blaze {
                         console.log(this.arrayOutline);
                         firstResult = false
                         const win = this.comproveWin()
-                        if(win && this.entryCount > 0) {
-                            
+                        if (win && this.entryCount > 0) {
+
                         }
                     }
 
@@ -166,15 +181,33 @@ class Blaze {
                     this.playTime = elementForPlay != null ? elementForPlay[0] : 'null'
                     if (this.playTime === 'Rolling In' && this.entryMoment) {
                         console.log('Jogando');
-                        
+
                         this.entryMoment = false
                         firstResult = true;
                         return //this.Entry
                     }
                 }, 1000)
             },
-            'Crash' : () => {
+            'Crash': async () => {
+                await this.page.waitForTimeout(1000);
+                console.log('Aguardando o Proximo Crash');
+                let element = await this.page.evaluate(() => {
+                    return document.querySelectorAll('.entries')[0].querySelector('span').innerText
+                })
 
+                setInterval(async () => {
+                    let newElement = await this.page.evaluate(() => {
+                        return document.querySelectorAll('.entries')[0].querySelector('span').innerText
+                    })
+                    console.log(newElement)
+
+                    if (element === !newElement) {
+                        console.log('Nova Entrada');
+                        this.arrayOutline.push(newElement); 
+                        element = newElement
+                        console.log(this.arrayOutline);
+                    }  
+                }, 1000);
             }
         }
         return waitingObjectCase[this.game]()
@@ -234,59 +267,76 @@ class Blaze {
             this.getUser['bankValue'] = this.bankValue[0]
             console.log(this.getUser, 'newGetUser')
 
-            await this.page.waitForTimeout(8000)
-            await this.page.goto('https://blaze.com/en/games/double');
-
             if (this.getUser['bankValue'] > this.getUser['valor']) {
                 return true
             }
 
+            await this.page.waitForTimeout(8000)
         } catch (error) {
             console.log('Erro', error)
         }
     }
 
     async Entry() {
-        console.log('Entry in this')
-        let input = await this.page.$$('input');
-        let buttons = await this.page.$$('button');
-        await input[0].type(`${this.getUser['valor']}`);
-        this.page.waitForTimeout(9000);
-        // await this.page.waitForTimeout(50)
-        console.log('Entry this Shit', this.getUser['valor']);
-        try {
-            await this.page.waitForTimeout(500);
-            if (this.aposta === 'white') {
-                await this.page.evaluate((el => {
-                    return document.querySelectorAll('.input-wrapper')[0].querySelectorAll('div')[3].click()
-                }))
-            } else if (this.aposta === 'red') {
-                await this.page.evaluate((el => {
-                    document.querySelectorAll('.input-wrapper')[0].querySelectorAll('div')[1].click()
-                }))
-            } else {
-                await this.page.evaluate((el => {
-                    document.querySelectorAll('.input-wrapper')[0].querySelectorAll('div')[4].click()
-                }))
+        const EntryCase = {
+            'Double': async () => {
+                console.log('Entry in this')
+                let input = await this.page.$$('input');
+                let buttons = await this.page.$$('button');
+                await input[0].type(`${this.getUser['valor']}`);
+                this.page.waitForTimeout(9000);
+                // await this.page.waitForTimeout(50)
+                console.log('Entry this Shit', this.getUser['valor']);
+                try {
+                    await this.page.waitForTimeout(500);
+                    if (this.aposta === 'white') {
+                        await this.page.evaluate((el => {
+                            return document.querySelectorAll('.input-wrapper')[0].querySelectorAll('div')[3].click()
+                        }))
+                    } else if (this.aposta === 'red') {
+                        await this.page.evaluate((el => {
+                            document.querySelectorAll('.input-wrapper')[0].querySelectorAll('div')[1].click()
+                        }))
+                    } else {
+                        await this.page.evaluate((el => {
+                            document.querySelectorAll('.input-wrapper')[0].querySelectorAll('div')[4].click()
+                        }))
 
+                    }
+                    await this.page.waitForTimeout(500);
+                    await buttons[7].click();
+
+                    if (this.protectWhite) {
+                        await this.page.waitForTimeout(500);
+                        await this.page.evaluate((el => {
+                            return document.querySelectorAll('.input-wrapper')[0].querySelectorAll('div')[3].click()
+                        }))
+                        await this.page.waitForTimeout(500);
+                        await buttons[7].click();
+                    }
+
+                    return true;
+
+                } catch (e) {
+                    console.log(e);
+                }
+            },
+            'Crash': async () => {
+            
+            await this.waitForTimeout(200);
+            // Start This Round
+            const inputs = await this.page.$$('input')
+            console.log('Entry')
+            inputs[0].type(this.getUser['valor']);
+            inputs[1].type(this.getUser[['autoretira']])
+
+            await this.page.evaluate(() => {
+                document.querySelectorAll('button')[7].click
+            })
             }
-            await this.page.waitForTimeout(500);
-            await buttons[7].click();
-
-            if (this.protectWhite) {
-                await this.page.waitForTimeout(500);
-                await this.page.evaluate((el => {
-                    return document.querySelectorAll('.input-wrapper')[0].querySelectorAll('div')[3].click()
-                }))
-                await this.page.waitForTimeout(500);
-                await buttons[7].click();
-            }
-
-            return true;
-
-        } catch (e) {
-            console.log(e);
         }
+
+        return await EntryCase['Double']()
     }
 
     async comproveWin() {
@@ -304,7 +354,7 @@ class Blaze {
         }
         const arrayPosition = this.timeCountComprove;
 
-        return caseColor[`${this.aposta}`](this.arrayOutline[arrayPosition])        
+        return caseColor[`${this.aposta}`](this.arrayOutline[arrayPosition])
     }
     async getLastResult() {
         console.log('Pegando o resultado')

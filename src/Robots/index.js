@@ -25,7 +25,7 @@ const element = {
   }
 
 
-const Robot = new double(sygnal, protectWhite, element, 'teste', 'Double');
+const Robot = new double(sygnal, protectWhite, element, 'teste', 'Crash');
 
 
 Promise.all([
