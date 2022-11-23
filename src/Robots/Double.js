@@ -68,6 +68,7 @@ const {
     getToken
 } = require('../../database');
 const { DOUBLE } = require('sequelize');
+const { resolveId } = require('telegram/Utils');
 
 puppeteer.use(StealthPlugin());
 // Moment timezone Sao Paulo
@@ -80,6 +81,7 @@ class Blaze {
     // Initial puppeter
     constructor(aposta, protectWhite, getUser, channel, game) {
         this.game = game
+        this.autoremove = getUser['autoretirar'];
         this.channel = channel
         this.browser = null;
         this.result = true
@@ -118,26 +120,24 @@ class Blaze {
 
         await this.init().then(async (el) => {
             await this.login(this.getUser['getUser'][0].username_, this.getUser['getUser'][0].password_);
-            
-            
-                console.log(`Waiting next Entry ${this.getUser['getUser'][0]}`);
-                console.log('-----------------------------------');
-                console.log(`Executando', ${this.entryCount}, ${this.getUser['bankValue'] - this.getUser['valor']} `)
+            console.log(`Waiting next Entry ${this.getUser['getUser'][0]}`);
+            console.log('-----------------------------------');
+            console.log(`Executando', ${this.entryCount}`)
 
 
-                const caseGame = {
-                    'Double': async () => {
-                        await this.page.goto('https://blaze.com/en/games/double');
-                    },
-                    'Crash': async () => {
-                        await this.page.goto('https://blaze.com/en/games/crash');
-                        await this.page.waitForTimeout(8000)
-                    }
+            const caseGame = {
+                'Double': async () => {
+                    await this.page.goto('https://blaze.com/en/games/double');
+                },
+                'Crash': async () => {
+                    await this.page.goto('https://blaze.com/en/games/crash');
+                    await this.page.waitForTimeout(8000)
                 }
+            }
 
-                await caseGame[this.game]()
-                await this.waitingForNextEntry()
-            
+            await caseGame[this.game]()
+            await this.waitingForNextEntry()
+
         })
     }
 
@@ -156,16 +156,26 @@ class Blaze {
 
                     console.log(element);
 
+
                     if (element && firstResult) {
-                        console.log(element);
                         this.arrayOutline.push(element.replace(/!/g, ''))
                         console.log(this.arrayOutline);
                         firstResult = false
-                        const win = this.comproveWin()
+                        const win = await this.comproveWin()
                         if (win && this.entryCount > 0) {
-
+                            console.log(win);
+                            this.entryCount = -1;
+                            
+                        } else {
+                            console.log(win);
+                            this.entryCount -=1;
+                            clearInterval(interval);
+                            await this.page.close()
+                           
+                            console.log('Lose Make the Action');
                         }
                     }
+
 
                     const elementForPlay = await this.page.evaluate(() => {
                         let element = 0;
@@ -176,7 +186,6 @@ class Blaze {
                     this.playTime = elementForPlay != null ? elementForPlay[0] : 'null'
                     if (this.playTime === 'Rolling In' && this.entryMoment) {
                         console.log('Jogando');
-
                         this.entryMoment = false
                         firstResult = true;
                         return //this.Entry
@@ -184,35 +193,70 @@ class Blaze {
                 }, 1000)
             },
             'Crash': async () => {
-                await this.page.waitForTimeout(20000);
-                console.log('Aguardando o Proximo Crash');
+
+                console.log('Aguardando o Próximo Crash', this.entryCount, this.autoretirar < this.arrayOutline[this.timeCountComprove]);
+
                 let element = await this.page.evaluate(() => {
                     return document.querySelectorAll('.entries')[0].querySelector('span').innerText
                 })
 
-                setInterval(async () => {
+
+                const interval = setInterval(async () => {
                     let newElement = await this.page.evaluate(() => {
                         return document.querySelectorAll('.entries')[0].querySelector('span').innerText
                     })
-                    console.log(newElement)
-                    const p = new Promise((resolve, reject) => {
-                        setTimeout(() => {
-                            resolve(this.entryMoment = 'playing')
-                        }, 4000)
-                    })
+                    // A cada 1 segundo ele confere se o resultando anterios foi diferente.
+                    // Sendo diferente ele envia este resultado para um array;
+                    // Quando feito um entrada ele marca oo this.entryMoment
+                    // Caso seja win:
 
-                    if(this.entryMoment) {
-                        this.Entry();
+
+
+                    if (element != newElement) {
+                        this.arrayOutline.push(newElement.replace('X', ''));
+
+                        if (this.entryMoment === 'STOP') {
+                            clearInterval(interval)
+                            await this.page.close();
+                            await this.browser.close()
+                        }
+
+
+                        if (this.entryMoment == 'betting' && this.arrayOutline.length > 0) {
+                            this.Entry();
+                            this.entryMoment = 'playing';
+                        }
+
+                        
+                        if (this.entryMoment == 'playing') {
+                            const win = await this.comproveWin()
+                            const caseWinCrash = {
+                                'Win': () => {
+                                    if (this.getUser['doublewin']) {
+                                        this.entryCount == 0 ? this.entryCount + 1 : this.entryCount;
+                                        this.entryMoment = 'betting';
+                                        return
+                                    }
+                                    this.entryMoment = "STOP";
+                                    return setTimeout(() => {
+                                        clearInterval(interval);
+                                        this.page.close();
+                                        this.browser.close();
+                                    }, 2000)
+                                },
+                                'Loss': () => {
+                                    if (this.entryCount > 0) {
+                                        this.entryMoment = 'betting';
+                                    }
+                                    this.timeCountComprove += 1;
+                                    this.entryCount = -1;
+                                    return
+                                }
+                            }
+                            element = newElement
+                            return caseWinCrash[win]()
+                        }
                     }
-
-                    if (element === !newElement) {
-                        console.log('Nova Entrada');
-                        this.arrayOutline.push(newElement); 
-                        element = newElement
-                        console.log(this.arrayOutline);
-                        this.entryMoment = 'betting';
-                        await p;
-                    }  
                 }, 1000);
             }
         }
@@ -312,9 +356,11 @@ class Blaze {
 
                     if (this.protectWhite) {
                         await this.page.waitForTimeout(500);
+
                         await this.page.evaluate((el => {
                             return document.querySelectorAll('.input-wrapper')[0].querySelectorAll('div')[3].click()
                         }))
+
                         await this.page.waitForTimeout(500);
                         await buttons[7].click();
                     }
@@ -326,40 +372,64 @@ class Blaze {
                 }
             },
             'Crash': async () => {
-            
-            await this.waitForTimeout(200);
-            // Start This Round
-            const inputs = await this.page.$$('input')
-            console.log('Entry')
-            inputs[0].type(this.getUser['valor']);
-            inputs[1].type(this.getUser[['autoretira']])
+                console.log('Just Entry in Crash')
+                await this.page.waitForTimeout(1200);
+                // Start This Round
+                const inputs = await this.page.$$('input')
+                console.log('Entry')
 
-            await this.page.evaluate(() => {
-                document.querySelectorAll('button')[7].click
-            })
+                console.log(this.getUser['autoretirar'])
+
+
+                inputs[0].type(`${this.getUser['valor']}`);
+                await this.page.waitForTimeout(300);
+                inputs[1].type(`${this.getUser['autoretirar']}`);
+                const button = await this.page.$$('button')
+
+                // button[7].click();
             }
         }
 
-        return await EntryCase['Double']()
+        return await EntryCase[this.game]()
     }
 
     async comproveWin() {
         // await this.getLastResult();
-        const caseColor = {
-            'red': (result) => {
-                return ['1', '2', '3', '4', '5', '6', '7'].includes(result);
+        const comproveWinGame = {
+            "Double": () => {
+                const caseColor = {
+                    'red': (result) => {
+                        return ['1', '2', '3', '4', '5', '6', '7'].includes(result);
+                    },
+                    'white': (result) => {
+                        return [''].includes(result);
+                    },
+                    'black': (result) => {
+                        return ['8', '9', '10', '11', '12', '13', '14'].includes(result);
+                    }
+                }
+                const arrayPosition = this.timeCountComprove;
+                return caseColor[`${this.aposta}`](this.arrayOutline[arrayPosition])
+
             },
-            'white': (result) => {
-                return [''].includes(result);
-            },
-            'black': (result) => {
-                return ['8', '9', '10', '11', '12', '13', '14'].includes(result);
+            "Crash": () => {
+                console.log(this.arrayOutline[this.timeCountComprove], 'result')
+
+                console.log(this.arrayOutline[this.timeCountComprove])
+                console.log(this.arrayOutline[this.timeCountComprove] >= this.getUser['autoretirar']);
+
+                    if (this.arrayOutline[this.timeCountComprove] >= this.getUser['autoretirar']) {
+                        return 'Win';
+                    } else {
+                        return "Loss";
+                    }
             }
         }
-        const arrayPosition = this.timeCountComprove;
 
-        return caseColor[`${this.aposta}`](this.arrayOutline[arrayPosition])
+        return comproveWinGame[this.game]();
     }
+
+
     async getLastResult() {
         console.log('Pegando o resultado')
         const result = await this.page.evaluate((el => {

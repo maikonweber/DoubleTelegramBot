@@ -14,6 +14,7 @@ const stoploss = 5;
 const valor = 1.11;
 const sygnal = "black";
 const protectWhite = true;
+const autoretira = '1.20';
 
 const element = {
     "getUser" : getUsers,
@@ -21,11 +22,15 @@ const element = {
     "sorogales" : sorogale,
     "valor" : valor,
     "winloss" : winloss,
-    "stoploss" : stoploss
-  }
+    "stoploss" : stoploss,
+    "autoretirar" : autoretira,
+    "posHit" : false,
+    "ciclos" : false
+    }
 
+    console.log(element);
 
-const Robot = new double(sygnal, protectWhite, element, 'teste', 'Crash');
+const Robot = new double(sygnal, protectWhite, element, 'teste', 'Double');
 
 
 Promise.all([
