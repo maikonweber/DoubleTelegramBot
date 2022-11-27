@@ -95,7 +95,8 @@ class Blaze {
         this.bankValue;
         this.aposta = aposta
         this.result = false
-        this.stoploss;
+        this.stoploss
+        this.postHit = getUser['posHit'] || false;
         this.winpot = 0
         this.arrayOutline = [];
         this.timeCountComprove = 0
@@ -153,29 +154,34 @@ class Blaze {
                         const element = document.querySelectorAll('.time-left > b')[0]?.innerText;
                         return element ? element : null;
                     })
-
-                    console.log(element);
-
-
+                    console.log(this)
                     if (element && firstResult) {
                         this.arrayOutline.push(element.replace(/!/g, ''))
                         console.log(this.arrayOutline);
                         firstResult = false
                         const win = await this.comproveWin()
-                        if (win && this.entryCount > 0) {
-                            console.log(win);
-                            this.entryCount = -1;
-                            
-                        } else {
-                            console.log(win);
-                            this.entryCount -=1;
+                        if (win && this.entryCount > 0 && !this.entryMoment) {
+                            console.log(win, 'win');
                             clearInterval(interval);
-                            await this.page.close()
-                           
-                            console.log('Lose Make the Action');
+                            this.page.close()
+                            this.entryCount -= 1;
+                            await insertRegisterAction(game, valor, bankValue, win, time);
+                            await setUserOnline(`${this.getUser['getUser'][0].users_id}`, userQueue)
+                        } else {
+                            await insertRegisterAction(game, valor, bankValue, win, time);
+                            await setUserOnline(`${this.getUser['getUser'][0].users_id}`, userQueue)
+
+                            console.log(win, 'loss');
+                            if (postHit) {
+                                this.Entry();
+                            }
+                            
+                            console.log('All the start comprove')
+                            this.timeCountComprove += 1;
+                            this.entryCount -= 1;
+                            this.entryMoment = true;
                         }
                     }
-
 
                     const elementForPlay = await this.page.evaluate(() => {
                         let element = 0;
@@ -185,10 +191,13 @@ class Blaze {
 
                     this.playTime = elementForPlay != null ? elementForPlay[0] : 'null'
                     if (this.playTime === 'Rolling In' && this.entryMoment) {
-                        console.log('Jogando');
+                        console.log('Entrando');
                         this.entryMoment = false
                         firstResult = true;
-                        return //this.Entry
+                        if (!this.postHit) {
+                            this.Entry()
+                        }
+                        return
                     }
                 }, 1000)
             },
@@ -227,7 +236,7 @@ class Blaze {
                             this.entryMoment = 'playing';
                         }
 
-                        
+
                         if (this.entryMoment == 'playing') {
                             const win = await this.comproveWin()
                             const caseWinCrash = {
@@ -333,6 +342,7 @@ class Blaze {
                 let buttons = await this.page.$$('button');
                 await input[0].type(`${this.getUser['valor']}`);
                 this.page.waitForTimeout(9000);
+                console.log('Entry is Shit');
                 // await this.page.waitForTimeout(50)
                 console.log('Entry this Shit', this.getUser['valor']);
                 try {
@@ -352,7 +362,7 @@ class Blaze {
 
                     }
                     await this.page.waitForTimeout(500);
-                    await buttons[7].click();
+                    // await buttons[7].click();
 
                     if (this.protectWhite) {
                         await this.page.waitForTimeout(500);
@@ -418,11 +428,11 @@ class Blaze {
                 console.log(this.arrayOutline[this.timeCountComprove])
                 console.log(this.arrayOutline[this.timeCountComprove] >= this.getUser['autoretirar']);
 
-                    if (this.arrayOutline[this.timeCountComprove] >= this.getUser['autoretirar']) {
-                        return 'Win';
-                    } else {
-                        return "Loss";
-                    }
+                if (this.arrayOutline[this.timeCountComprove] >= this.getUser['autoretirar']) {
+                    return 'Win';
+                } else {
+                    return "Loss";
+                }
             }
         }
 

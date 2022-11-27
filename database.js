@@ -11,6 +11,15 @@ let client = {
 
 
 let pool = new pg.Pool(client);
+
+
+async function insertRegisterAction(game, valor, bankValue, win, time) {
+    const query = `INSERT INTO register_action (game, valor, bankvalue, win, time) 
+                   VALUES ($1, $2, $3, $3, $5)`
+    const result = await pool.query(query, [game, valor, bankValue, win, time]);
+    return result.rows();
+
+}
   
 async function getUser(login, password) {
     const query = `
@@ -73,6 +82,14 @@ async function getAllUsersPayment() {
     // })
 }
 
+async function getallChannelDatabase(channel) {
+    const query = `
+        Select * from $1;
+    `
+    const result = await pool.query(query, [channel])
+    return result.rows[0];
+}
+
 
 async function getUserBlaze(users_id) {
     const query = `
@@ -111,7 +128,9 @@ module.exports = {
     getTokenIsValid,
     getTokenAndUserInformation,
     getChannelInformationDouble,
-    getToken
+    getToken,
+    insertRegisterAction,
+    getallChannelDatabase
 }
 
 

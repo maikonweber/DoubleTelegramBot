@@ -25,6 +25,13 @@ create table channel_config_double (
   detect varchar(105) not null
 );
 
+create table register_action (
+  id serial primary key,
+  created_at timestamp not null default now(),
+  game varchar(200),
+  
+)
+
 create table channel_name_double (
   channel_id integer references channel_config_double(id),
   channel_name varchar(105) not null

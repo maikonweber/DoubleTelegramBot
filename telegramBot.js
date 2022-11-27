@@ -12,8 +12,10 @@ const helpMessage = `
   Este são os commandos;
   /login <email> <password> - Login,
   /help - command reference;
-  /game_crash $<valor> #<martingale:numeral> $<sorosgale:porcentagem> @<maxloss:porcentagem> &<stopWin>
-  /game_double $<valor> #<martingale:numeral> $<sorosgale:porcentagem> @<maxloss:porcentagem> &<stopWin> 
+  /game_crash > : <valor> # <martingale:numeral> % : <sorosgale:porcentagem> ! : <maxloss:porcentagem> & : <stopWin> >: : <autoremove:ponto flutante> 
+  /game_double > : <valor> # <martingale:numeral> % :<sorosgale:porcentagem> ! : <maxloss:porcentagem> & : <stopWin> 
+  // Canais Disponiveis:
+    @teste;
   `
 
 
@@ -63,7 +65,8 @@ bot.command(['game_crash'], async (ctx, next) => {
     channel : 'teste',
     sorogale : 0,
     maxloss : 9999,
-    stopwin : 9999
+    stopwin : 9999,
+    posHit : false
   }
 
   
@@ -90,6 +93,10 @@ bot.command(['game_crash'], async (ctx, next) => {
       if (/@/g.test(el)) {
         body.channel = el.replace(/@/g, '')
       }
+      if(/</g.test(el)) {
+        body.posHit = el.replace(/</g, '')
+      }
+
     })
   }
 
@@ -121,7 +128,8 @@ bot.command(['game_double'], async (ctx, next) => {
     channel : 'teste',
     sorogale : 0,
     maxloss : 9999,
-    stopwin : 9999
+    stopwin : 9999,
+    posHit : false
   }
   
   if (message) {
@@ -146,6 +154,9 @@ bot.command(['game_double'], async (ctx, next) => {
       }
       if (/@/g.test(el)) {
         body.channel = el.replace(/@/g, '')
+      }
+      if(/</g.test(el)) {
+        body.channel = el.replace(/</g, '')
       }
     })
   }

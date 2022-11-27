@@ -12,8 +12,8 @@ const sorogale = 4;
 const winloss = 5;
 const stoploss = 5;
 const valor = 1.11;
-const sygnal = "black";
-const protectWhite = true;
+const sygnal = "red";
+const protectWhite = false;
 const autoretira = '1.20';
 
 const element = {
@@ -26,6 +26,7 @@ const element = {
     "autoretirar" : autoretira,
     "posHit" : false,
     "ciclos" : false
+
     }
 
     console.log(element);

@@ -114,7 +114,7 @@ app.post('/v1/crash', async (req, res) => {
   console.log(req.body);
   const token = req.headers.token
   const getUser = await getTokenAndUserInformation(token);
-  const { valor, martingale, channel, sorogale, maxloss, stopwin } = req.body
+  const { valor, martingale, channel, sorogale, maxloss, stopwin, posHit } = req.body
   let arrayQueue = await getChannelQueue(`${channel}`);
   arrayQueue = JSON.parse(arrayQueue);
   console.log(arrayQueue);
@@ -125,7 +125,8 @@ app.post('/v1/crash', async (req, res) => {
       martingale,
       sorogale,
       maxloss,
-      stopwin
+      stopwin,
+      posHit
   }  
   
   arrayQueue.push(userQueue)
@@ -139,7 +140,7 @@ app.post('/v1/crash', async (req, res) => {
 app.post('/v1/double', async (req, res) => {
   const token = req.headers.token
   const getUser = await getTokenAndUserInformation(token);
-  const { valor, martingale, channel, sorogale, maxloss, stopwin } = req.body
+  const { valor, martingale, channel, sorogale, maxloss, stopwin, posHit } = req.body
   console.log(channel);
   let arrayQueue = await getChannelQueue(`${channel}`);
   arrayQueue = JSON.parse(arrayQueue);
@@ -151,7 +152,8 @@ app.post('/v1/double', async (req, res) => {
       martingale,
       sorogale,
       maxloss,
-      stopwin
+      stopwin,
+      posHit
   }  
 
   arrayQueue.push(userQueue)
