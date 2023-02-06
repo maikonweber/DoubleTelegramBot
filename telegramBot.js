@@ -1,5 +1,5 @@
 
-const token = '5189315995:AAH08sFdFug0515I3RvBiYHVQo9aK4SomiY'
+
 const { Telegraf } = require('telegraf');
 const bot = new Telegraf(token)
 const axios = require('axios');
